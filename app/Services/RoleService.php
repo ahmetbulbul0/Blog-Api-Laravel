@@ -39,18 +39,13 @@ class RoleService implements RoleServiceInterface
         return $this->roleRepository->delete($id);
     }
 
-    public function findByName($name)
+    public function getRoleUsers($id)
     {
-        return $this->roleRepository->findByName($name);
+        return $this->roleRepository->getRoleUsers($id);
     }
 
-    public function getRoleUsers($roleId)
+    public function getUsersCount($id)
     {
-        return $this->roleRepository->getRoleUsers($roleId);
-    }
-
-    public function getUsersCount($roleId)
-    {
-        return $this->roleRepository->getUsersCount($roleId);
+        return $this->roleRepository->getUsersCount($id);
     }
 }

@@ -26,10 +26,6 @@ class CommentService implements CommentServiceInterface
 
     public function createComment(array $data)
     {
-        // Kullanıcı ID'sini otomatik ekle
-        $data['user_id'] = auth()->id();
-        $data['status'] = 'pending';
-
         return $this->commentRepository->create($data);
     }
 

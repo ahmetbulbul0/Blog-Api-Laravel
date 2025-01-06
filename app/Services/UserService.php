@@ -27,19 +27,15 @@ class UserService implements UserServiceInterface
 
     public function createUser(array $data)
     {
-        // Şifreyi hashle
         $data['password'] = Hash::make($data['password']);
-
         return $this->userRepository->create($data);
     }
 
     public function updateUser($id, array $data)
     {
-        // Eğer şifre güncellenmişse hashle
         if (isset($data['password'])) {
             $data['password'] = Hash::make($data['password']);
         }
-
         return $this->userRepository->update($id, $data);
     }
 
@@ -48,19 +44,14 @@ class UserService implements UserServiceInterface
         return $this->userRepository->delete($id);
     }
 
-    public function findByEmail($email)
+    public function getUserPosts($id)
     {
-        return $this->userRepository->findByEmail($email);
+        return $this->userRepository->getUserPosts($id);
     }
 
-    public function getUserPosts($userId)
+    public function getUserComments($id)
     {
-        return $this->userRepository->getUserPosts($userId);
-    }
-
-    public function getUserComments($userId)
-    {
-        return $this->userRepository->getUserComments($userId);
+        return $this->userRepository->getUserComments($id);
     }
 
     public function assignRole($userId, $roleId)
@@ -71,10 +62,5 @@ class UserService implements UserServiceInterface
     public function removeRole($userId, $roleId)
     {
         return $this->userRepository->removeRole($userId, $roleId);
-    }
-
-    public function hasRole($userId, $roleName)
-    {
-        return $this->userRepository->hasRole($userId, $roleName);
     }
 }

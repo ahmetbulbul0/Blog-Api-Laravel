@@ -26,15 +26,6 @@ class PostViewService implements PostViewServiceInterface
 
     public function createView(array $data)
     {
-        // Kullanıcı ID'sini otomatik ekle
-        if (auth()->check()) {
-            $data['user_id'] = auth()->id();
-        }
-
-        // IP ve User Agent bilgilerini otomatik ekle
-        $data['ip_address'] = request()->ip();
-        $data['user_agent'] = request()->userAgent();
-
         return $this->postViewRepository->create($data);
     }
 

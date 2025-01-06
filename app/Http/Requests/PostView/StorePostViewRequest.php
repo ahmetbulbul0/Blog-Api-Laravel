@@ -15,8 +15,9 @@ class StorePostViewRequest extends FormRequest
     {
         return [
             'post_id' => 'required|exists:posts,id',
-            'ip_address' => 'nullable|ip',
-            'user_agent' => 'nullable|string|max:255'
+            'user_id' => 'nullable|exists:users,id',
+            'ip_address' => 'required|ip',
+            'user_agent' => 'required|string'
         ];
     }
 }

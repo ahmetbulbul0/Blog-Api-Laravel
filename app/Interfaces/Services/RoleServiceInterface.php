@@ -9,7 +9,6 @@ interface RoleServiceInterface
     public function createRole(array $data);
     public function updateRole($id, array $data);
     public function deleteRole($id);
-    public function findByName($name);
-    public function getRoleUsers($roleId);
-    public function getUsersCount($roleId);
+    public function getRoleUsers($id);
+    public function getUsersCount($id);
 }
