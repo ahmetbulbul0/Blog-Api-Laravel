@@ -15,9 +15,16 @@ class StoreCategoryRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'slug' => ['nullable', 'string', 'max:255', 'unique:categories'],
+            'slug' => ['required', 'string', 'max:255', 'unique:categories'],
             'description' => ['nullable', 'string'],
-            'parent_id' => ['nullable', 'exists:categories,id']
+            'parentId' => ['nullable', 'exists:categories,id']
         ];
+    }
+
+    protected function prepareForValidation()
+    {
+        $this->merge([
+            'parent_id' => $this->parentId
+        ]);
     }
 }

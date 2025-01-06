@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Category;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class UpdateCategoryRequest extends FormRequest
 {
@@ -18,7 +17,14 @@ class UpdateCategoryRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', 'unique:categories,slug,' . $this->route('category')],
             'description' => ['nullable', 'string'],
-            'parent_id' => ['nullable', 'exists:categories,id']
+            'parentId' => ['nullable', 'exists:categories,id']
         ];
+    }
+
+    protected function prepareForValidation()
+    {
+        $this->merge([
+            'parent_id' => $this->parentId
+        ]);
     }
 }
