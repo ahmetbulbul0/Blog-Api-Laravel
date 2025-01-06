@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use Illuminate\Http\Request;
 use App\Helpers\ResponseHelper;
+use App\Http\Resources\PostViewResource;
 
 /**
  * @OA\Tag(
@@ -46,11 +47,12 @@ class PostViewController extends Controller
      */
     public function index(): JsonResponse
     {
-        $views = $this->postViewService->getAllPostViews();
-        return response()->json([
-            'status' => 'success',
-            'data' => $views
-        ]);
+        try {
+            $postViews = $this->postViewService->getAllPostViews();
+            return ResponseHelper::success(PostViewResource::collection($postViews));
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
@@ -278,5 +280,44 @@ class PostViewController extends Controller
             'status' => 'success',
             'data' => $views
         ]);
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/post-views/{id}",
+     *     summary="Belirli bir görüntülenme detayını getir",
+     *     tags={"Post Views"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Görüntülenme ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Başarılı",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object"
+     *             )
+     *         )
+     *     )
+     * )
+     */
+    public function show(int $id): JsonResponse
+    {
+        try {
+            $postView = $this->postViewService->getPostViewById($id);
+            if (!$postView) {
+                return ResponseHelper::notFound('Post view not found');
+            }
+            return ResponseHelper::success(new PostViewResource($postView));
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 }

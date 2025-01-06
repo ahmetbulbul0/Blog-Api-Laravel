@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use App\Helpers\ResponseHelper;
 use Illuminate\Http\Request;
+use App\Http\Resources\PostResource;
 
 /**
  * @OA\Tag(
@@ -47,7 +48,7 @@ class PostController extends Controller
     {
         try {
             $posts = $this->postService->getAllPosts();
-            return ResponseHelper::success($posts);
+            return ResponseHelper::success(PostResource::collection($posts));
         } catch (\Exception $e) {
             return ResponseHelper::serverError($e->getMessage());
         }
@@ -88,7 +89,7 @@ class PostController extends Controller
     {
         try {
             $post = $this->postService->createPost($request->validated());
-            return ResponseHelper::created($post, 'Post created successfully');
+            return ResponseHelper::created(new PostResource($post), 'Post created successfully');
         } catch (\Exception $e) {
             return ResponseHelper::serverError($e->getMessage());
         }
@@ -125,7 +126,7 @@ class PostController extends Controller
             if (!$post) {
                 return ResponseHelper::notFound('Post not found');
             }
-            return ResponseHelper::success($post);
+            return ResponseHelper::success(new PostResource($post));
         } catch (\Exception $e) {
             return ResponseHelper::serverError($e->getMessage());
         }
@@ -176,7 +177,7 @@ class PostController extends Controller
             if (!$post) {
                 return ResponseHelper::notFound('Post not found');
             }
-            return ResponseHelper::success($post, 'Post updated successfully');
+            return ResponseHelper::success(new PostResource($post), 'Post updated successfully');
         } catch (\Exception $e) {
             return ResponseHelper::serverError($e->getMessage());
         }
@@ -239,7 +240,7 @@ class PostController extends Controller
     {
         try {
             $posts = $this->postService->getPublishedPosts();
-            return ResponseHelper::success($posts);
+            return ResponseHelper::success(PostResource::collection($posts));
         } catch (\Exception $e) {
             return ResponseHelper::serverError($e->getMessage());
         }
@@ -266,7 +267,7 @@ class PostController extends Controller
     {
         try {
             $posts = $this->postService->getDraftPosts();
-            return ResponseHelper::success($posts);
+            return ResponseHelper::success(PostResource::collection($posts));
         } catch (\Exception $e) {
             return ResponseHelper::serverError($e->getMessage());
         }
@@ -293,7 +294,7 @@ class PostController extends Controller
     {
         try {
             $posts = $this->postService->getArchivedPosts();
-            return ResponseHelper::success($posts);
+            return ResponseHelper::success(PostResource::collection($posts));
         } catch (\Exception $e) {
             return ResponseHelper::serverError($e->getMessage());
         }
@@ -328,7 +329,7 @@ class PostController extends Controller
         try {
             $limit = $request->get('limit', 10);
             $posts = $this->postService->getPopularPosts($limit);
-            return ResponseHelper::success($posts);
+            return ResponseHelper::success(PostResource::collection($posts));
         } catch (\Exception $e) {
             return ResponseHelper::serverError($e->getMessage());
         }
@@ -363,7 +364,7 @@ class PostController extends Controller
         try {
             $limit = $request->get('limit', 10);
             $posts = $this->postService->getRecentPosts($limit);
-            return ResponseHelper::success($posts);
+            return ResponseHelper::success(PostResource::collection($posts));
         } catch (\Exception $e) {
             return ResponseHelper::serverError($e->getMessage());
         }
@@ -405,7 +406,7 @@ class PostController extends Controller
         try {
             $limit = $request->get('limit', 5);
             $posts = $this->postService->getRelatedPosts($id, $limit);
-            return ResponseHelper::success($posts);
+            return ResponseHelper::success(PostResource::collection($posts));
         } catch (\Exception $e) {
             return ResponseHelper::serverError($e->getMessage());
         }

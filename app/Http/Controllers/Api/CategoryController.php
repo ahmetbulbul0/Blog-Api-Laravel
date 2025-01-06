@@ -6,6 +6,7 @@ use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Category\StoreCategoryRequest;
 use App\Http\Requests\Category\UpdateCategoryRequest;
+use App\Http\Resources\CategoryResource;
 use App\Interfaces\Services\CategoryServiceInterface;
 use Illuminate\Http\JsonResponse;
 
@@ -45,7 +46,7 @@ class CategoryController extends Controller
     {
         try {
             $categories = $this->categoryService->getAllCategories();
-            return ResponseHelper::success($categories);
+            return ResponseHelper::success(CategoryResource::collection($categories));
         } catch (\Exception $e) {
             return ResponseHelper::serverError($e->getMessage());
         }
@@ -82,7 +83,7 @@ class CategoryController extends Controller
     {
         try {
             $category = $this->categoryService->createCategory($request->validated());
-            return ResponseHelper::created($category, 'Category created successfully');
+            return ResponseHelper::created(new CategoryResource($category), 'Category created successfully');
         } catch (\Exception $e) {
             return ResponseHelper::serverError($e->getMessage());
         }
@@ -119,7 +120,7 @@ class CategoryController extends Controller
             if (!$category) {
                 return ResponseHelper::notFound('Category not found');
             }
-            return ResponseHelper::success($category);
+            return ResponseHelper::success(new CategoryResource($category));
         } catch (\Exception $e) {
             return ResponseHelper::serverError($e->getMessage());
         }
@@ -166,7 +167,7 @@ class CategoryController extends Controller
             if (!$category) {
                 return ResponseHelper::notFound('Category not found');
             }
-            return ResponseHelper::success($category, 'Category updated successfully');
+            return ResponseHelper::success(new CategoryResource($category), 'Category updated successfully');
         } catch (\Exception $e) {
             return ResponseHelper::serverError($e->getMessage());
         }
@@ -229,7 +230,7 @@ class CategoryController extends Controller
     {
         try {
             $categories = $this->categoryService->getParentCategories();
-            return ResponseHelper::success($categories);
+            return ResponseHelper::success(CategoryResource::collection($categories));
         } catch (\Exception $e) {
             return ResponseHelper::serverError($e->getMessage());
         }

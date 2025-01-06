@@ -9,6 +9,8 @@ use App\Interfaces\Services\TagServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use App\Helpers\ResponseHelper;
+use App\Http\Resources\TagResource;
+use App\Http\Resources\PostResource;
 
 /**
  * @OA\Tag(
@@ -47,11 +49,12 @@ class TagController extends Controller
      */
     public function index(): JsonResponse
     {
-        $tags = $this->tagService->getAllTags();
-        return response()->json([
-            'status' => 'success',
-            'data' => $tags
-        ]);
+        try {
+            $tags = $this->tagService->getAllTags();
+            return ResponseHelper::success(TagResource::collection($tags));
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
@@ -81,12 +84,12 @@ class TagController extends Controller
      */
     public function store(StoreTagRequest $request): JsonResponse
     {
-        $tag = $this->tagService->createTag($request->validated());
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Tag created successfully',
-            'data' => $tag
-        ], Response::HTTP_CREATED);
+        try {
+            $tag = $this->tagService->createTag($request->validated());
+            return ResponseHelper::created(new TagResource($tag), 'Tag created successfully');
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
@@ -118,11 +121,15 @@ class TagController extends Controller
      */
     public function show(int $id): JsonResponse
     {
-        $tag = $this->tagService->getTagById($id);
-        return response()->json([
-            'status' => 'success',
-            'data' => $tag
-        ]);
+        try {
+            $tag = $this->tagService->getTagById($id);
+            if (!$tag) {
+                return ResponseHelper::notFound('Tag not found');
+            }
+            return ResponseHelper::success(new TagResource($tag));
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
@@ -163,12 +170,15 @@ class TagController extends Controller
      */
     public function update(UpdateTagRequest $request, int $id): JsonResponse
     {
-        $tag = $this->tagService->updateTag($id, $request->validated());
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Tag updated successfully',
-            'data' => $tag
-        ]);
+        try {
+            $tag = $this->tagService->updateTag($id, $request->validated());
+            if (!$tag) {
+                return ResponseHelper::notFound('Tag not found');
+            }
+            return ResponseHelper::success(new TagResource($tag), 'Tag updated successfully');
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
@@ -230,10 +240,7 @@ class TagController extends Controller
     public function popularTags(): JsonResponse
     {
         $tags = $this->tagService->getPopularTags();
-        return response()->json([
-            'status' => 'success',
-            'data' => $tags
-        ]);
+        return ResponseHelper::success(TagResource::collection($tags));
     }
 
     /**
@@ -264,7 +271,7 @@ class TagController extends Controller
     {
         try {
             $posts = $this->tagService->getTagPosts($id);
-            return ResponseHelper::success($posts);
+            return ResponseHelper::success(PostResource::collection($posts));
         } catch (\Exception $e) {
             return ResponseHelper::serverError($e->getMessage());
         }

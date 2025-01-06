@@ -9,6 +9,7 @@ use App\Interfaces\Services\CommentServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use App\Helpers\ResponseHelper;
+use App\Http\Resources\CommentResource;
 
 /**
  * @OA\Tag(
@@ -47,11 +48,12 @@ class CommentController extends Controller
      */
     public function index(): JsonResponse
     {
-        $comments = $this->commentService->getAllComments();
-        return response()->json([
-            'status' => 'success',
-            'data' => $comments
-        ]);
+        try {
+            $comments = $this->commentService->getAllComments();
+            return ResponseHelper::success(CommentResource::collection($comments));
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
@@ -82,12 +84,12 @@ class CommentController extends Controller
      */
     public function store(StoreCommentRequest $request): JsonResponse
     {
-        $comment = $this->commentService->createComment($request->validated());
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Comment created successfully',
-            'data' => $comment
-        ], Response::HTTP_CREATED);
+        try {
+            $comment = $this->commentService->createComment($request->validated());
+            return ResponseHelper::created(new CommentResource($comment), 'Comment created successfully');
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
@@ -119,11 +121,15 @@ class CommentController extends Controller
      */
     public function show(int $id): JsonResponse
     {
-        $comment = $this->commentService->getCommentById($id);
-        return response()->json([
-            'status' => 'success',
-            'data' => $comment
-        ]);
+        try {
+            $comment = $this->commentService->getCommentById($id);
+            if (!$comment) {
+                return ResponseHelper::notFound('Comment not found');
+            }
+            return ResponseHelper::success(new CommentResource($comment));
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
@@ -161,14 +167,17 @@ class CommentController extends Controller
      *     )
      * )
      */
-    public function update(UpdateCommentRequest $request, int $id): JsonResponse
+    public function update(StoreCommentRequest $request, int $id): JsonResponse
     {
-        $comment = $this->commentService->updateComment($id, $request->validated());
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Comment updated successfully',
-            'data' => $comment
-        ]);
+        try {
+            $comment = $this->commentService->updateComment($id, $request->validated());
+            if (!$comment) {
+                return ResponseHelper::notFound('Comment not found');
+            }
+            return ResponseHelper::success(new CommentResource($comment), 'Comment updated successfully');
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**

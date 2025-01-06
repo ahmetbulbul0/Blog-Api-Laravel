@@ -9,6 +9,7 @@ use App\Interfaces\Services\RoleServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use App\Helpers\ResponseHelper;
+use App\Http\Resources\RoleResource;
 
 /**
  * @OA\Tag(
@@ -47,11 +48,12 @@ class RoleController extends Controller
      */
     public function index(): JsonResponse
     {
-        $roles = $this->roleService->getAllRoles();
-        return response()->json([
-            'status' => 'success',
-            'data' => $roles
-        ]);
+        try {
+            $roles = $this->roleService->getAllRoles();
+            return ResponseHelper::success(RoleResource::collection($roles));
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
@@ -81,12 +83,12 @@ class RoleController extends Controller
      */
     public function store(StoreRoleRequest $request): JsonResponse
     {
-        $role = $this->roleService->createRole($request->validated());
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Role created successfully',
-            'data' => $role
-        ], Response::HTTP_CREATED);
+        try {
+            $role = $this->roleService->createRole($request->validated());
+            return ResponseHelper::created(new RoleResource($role), 'Role created successfully');
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
@@ -118,11 +120,15 @@ class RoleController extends Controller
      */
     public function show(int $id): JsonResponse
     {
-        $role = $this->roleService->getRoleById($id);
-        return response()->json([
-            'status' => 'success',
-            'data' => $role
-        ]);
+        try {
+            $role = $this->roleService->getRoleById($id);
+            if (!$role) {
+                return ResponseHelper::notFound('Role not found');
+            }
+            return ResponseHelper::success(new RoleResource($role));
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
@@ -163,12 +169,15 @@ class RoleController extends Controller
      */
     public function update(UpdateRoleRequest $request, int $id): JsonResponse
     {
-        $role = $this->roleService->updateRole($id, $request->validated());
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Role updated successfully',
-            'data' => $role
-        ]);
+        try {
+            $role = $this->roleService->updateRole($id, $request->validated());
+            if (!$role) {
+                return ResponseHelper::notFound('Role not found');
+            }
+            return ResponseHelper::success(new RoleResource($role), 'Role updated successfully');
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**

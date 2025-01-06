@@ -9,6 +9,7 @@ use App\Interfaces\Services\UserServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use App\Helpers\ResponseHelper;
+use App\Http\Resources\UserResource;
 
 /**
  * @OA\Tag(
@@ -47,11 +48,12 @@ class UserController extends Controller
      */
     public function index(): JsonResponse
     {
-        $users = $this->userService->getAllUsers();
-        return response()->json([
-            'status' => 'success',
-            'data' => $users
-        ]);
+        try {
+            $users = $this->userService->getAllUsers();
+            return ResponseHelper::success(UserResource::collection($users));
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
@@ -83,12 +85,12 @@ class UserController extends Controller
      */
     public function store(StoreUserRequest $request): JsonResponse
     {
-        $user = $this->userService->createUser($request->validated());
-        return response()->json([
-            'status' => 'success',
-            'message' => 'User created successfully',
-            'data' => $user
-        ], Response::HTTP_CREATED);
+        try {
+            $user = $this->userService->createUser($request->validated());
+            return ResponseHelper::created(new UserResource($user), 'User created successfully');
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
@@ -120,11 +122,15 @@ class UserController extends Controller
      */
     public function show(int $id): JsonResponse
     {
-        $user = $this->userService->getUserById($id);
-        return response()->json([
-            'status' => 'success',
-            'data' => $user
-        ]);
+        try {
+            $user = $this->userService->getUserById($id);
+            if (!$user) {
+                return ResponseHelper::notFound('User not found');
+            }
+            return ResponseHelper::success(new UserResource($user));
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
@@ -165,12 +171,15 @@ class UserController extends Controller
      */
     public function update(UpdateUserRequest $request, int $id): JsonResponse
     {
-        $user = $this->userService->updateUser($id, $request->validated());
-        return response()->json([
-            'status' => 'success',
-            'message' => 'User updated successfully',
-            'data' => $user
-        ]);
+        try {
+            $user = $this->userService->updateUser($id, $request->validated());
+            if (!$user) {
+                return ResponseHelper::notFound('User not found');
+            }
+            return ResponseHelper::success(new UserResource($user), 'User updated successfully');
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
