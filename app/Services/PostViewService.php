@@ -58,4 +58,9 @@ class PostViewService implements PostViewServiceInterface
     {
         return $this->postViewRepository->getMostViewedPosts($limit);
     }
+
+    public function getPostViews($postId)
+    {
+        return $this->postViewRepository->getPostViews($postId);
+    }
 }

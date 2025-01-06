@@ -8,6 +8,7 @@ use App\Http\Requests\Role\UpdateRoleRequest;
 use App\Interfaces\Services\RoleServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
+use App\Helpers\ResponseHelper;
 
 /**
  * @OA\Tag(
@@ -223,23 +224,21 @@ class RoleController extends Controller
      *         response=200,
      *         description="Başarılı",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(
-     *                 property="data",
-     *                 type="array",
-     *                 @OA\Items(type="object")
-     *             )
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Success"),
+     *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
      *         )
      *     )
      * )
      */
     public function roleUsers(int $id): JsonResponse
     {
-        $users = $this->roleService->getRoleUsers($id);
-        return response()->json([
-            'status' => 'success',
-            'data' => $users
-        ]);
+        try {
+            $users = $this->roleService->getRoleUsers($id);
+            return ResponseHelper::success($users);
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
@@ -259,18 +258,22 @@ class RoleController extends Controller
      *         response=200,
      *         description="Başarılı",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(property="data", type="integer", example=5)
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Success"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="count", type="integer", example=5)
+     *             )
      *         )
      *     )
      * )
      */
     public function usersCount(int $id): JsonResponse
     {
-        $count = $this->roleService->getRoleUsersCount($id);
-        return response()->json([
-            'status' => 'success',
-            'data' => $count
-        ]);
+        try {
+            $count = $this->roleService->getUsersCount($id);
+            return ResponseHelper::success(['count' => $count]);
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 }

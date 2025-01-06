@@ -15,4 +15,7 @@ interface PostServiceInterface
     public function getDraftPosts();
     public function getArchivedPosts();
     public function handlePostImage(UploadedFile $image);
+    public function getPopularPosts($limit = 10);
+    public function getRecentPosts($limit = 10);
+    public function getRelatedPosts($postId, $limit = 5);
 }

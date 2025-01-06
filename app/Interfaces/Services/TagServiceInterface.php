@@ -11,4 +11,5 @@ interface TagServiceInterface
     public function deleteTag($id);
     public function getTagWithPosts($id);
     public function getPopularTags($limit = 10);
+    public function getTagPosts($id);
 }

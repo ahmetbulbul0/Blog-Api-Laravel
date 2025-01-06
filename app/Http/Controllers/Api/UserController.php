@@ -8,6 +8,7 @@ use App\Http\Requests\User\UpdateUserRequest;
 use App\Interfaces\Services\UserServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
+use App\Helpers\ResponseHelper;
 
 /**
  * @OA\Tag(
@@ -211,7 +212,7 @@ class UserController extends Controller
     /**
      * @OA\Get(
      *     path="/api/users/{id}/posts",
-     *     summary="Kullanıcının gönderilerini listele",
+     *     summary="Kullanıcıya ait gönderileri listele",
      *     tags={"Users"},
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
@@ -225,29 +226,27 @@ class UserController extends Controller
      *         response=200,
      *         description="Başarılı",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(
-     *                 property="data",
-     *                 type="array",
-     *                 @OA\Items(type="object")
-     *             )
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Success"),
+     *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
      *         )
      *     )
      * )
      */
     public function userPosts(int $id): JsonResponse
     {
-        $posts = $this->userService->getUserPosts($id);
-        return response()->json([
-            'status' => 'success',
-            'data' => $posts
-        ]);
+        try {
+            $posts = $this->userService->getUserPosts($id);
+            return ResponseHelper::success($posts);
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
      * @OA\Get(
      *     path="/api/users/{id}/comments",
-     *     summary="Kullanıcının yorumlarını listele",
+     *     summary="Kullanıcıya ait yorumları listele",
      *     tags={"Users"},
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
@@ -261,23 +260,21 @@ class UserController extends Controller
      *         response=200,
      *         description="Başarılı",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(
-     *                 property="data",
-     *                 type="array",
-     *                 @OA\Items(type="object")
-     *             )
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Success"),
+     *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
      *         )
      *     )
      * )
      */
     public function userComments(int $id): JsonResponse
     {
-        $comments = $this->userService->getUserComments($id);
-        return response()->json([
-            'status' => 'success',
-            'data' => $comments
-        ]);
+        try {
+            $comments = $this->userService->getUserComments($id);
+            return ResponseHelper::success($comments);
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**

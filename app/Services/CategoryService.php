@@ -53,4 +53,9 @@ class CategoryService implements CategoryServiceInterface
     {
         return $this->categoryRepository->getCategoryWithPosts($id);
     }
+
+    public function getCategoryPosts($id)
+    {
+        return $this->categoryRepository->getCategoryWithPosts($id);
+    }
 }

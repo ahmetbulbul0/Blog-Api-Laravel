@@ -12,4 +12,5 @@ interface CategoryServiceInterface
     public function getParentCategories();
     public function getSubCategories($parentId);
     public function getCategoryWithPosts($id);
+    public function getCategoryPosts($id);
 }

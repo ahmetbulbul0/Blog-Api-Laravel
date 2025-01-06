@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Interfaces\Services\UserServiceInterface;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 
 /**
  * @OA\Info(
@@ -49,8 +50,8 @@ class AuthController extends Controller
      *         response=201,
      *         description="Başarılı kayıt",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(property="message", type="string", example="User registered successfully."),
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="User registered successfully"),
      *             @OA\Property(
      *                 property="data",
      *                 type="object",
@@ -61,25 +62,25 @@ class AuthController extends Controller
      *     )
      * )
      */
-    public function register(RegisterRequest $request)
+    public function register(RegisterRequest $request): JsonResponse
     {
-        $user = $this->userService->create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role_id' => $request->role_id
-        ]);
+        try {
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'role_id' => $request->role_id
+            ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+            $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json([
-            'status' => true,
-            'message' => 'User registered successfully',
-            'data' => [
+            return ResponseHelper::created([
                 'user' => $user,
                 'token' => $token
-            ]
-        ], 201);
+            ], 'User registered successfully');
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
@@ -99,8 +100,8 @@ class AuthController extends Controller
      *         response=200,
      *         description="Başarılı giriş",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(property="message", type="string", example="Logged in successfully."),
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Logged in successfully"),
      *             @OA\Property(
      *                 property="data",
      *                 type="object",
@@ -108,37 +109,26 @@ class AuthController extends Controller
      *                 @OA\Property(property="token", type="string")
      *             )
      *         )
-     *     ),
-     *     @OA\Response(
-     *         response=401,
-     *         description="Geçersiz kimlik bilgileri",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="error"),
-     *             @OA\Property(property="message", type="string", example="Invalid login credentials.")
-     *         )
      *     )
      * )
      */
     public function login(LoginRequest $request): JsonResponse
     {
-        if (!Auth::attempt($request->only('email', 'password'))) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Invalid login credentials.'
-            ], Response::HTTP_UNAUTHORIZED);
-        }
+        try {
+            if (!Auth::attempt($request->only('email', 'password'))) {
+                return ResponseHelper::unauthorized('Invalid login credentials');
+            }
 
-        $user = Auth::user();
-        $token = $user->createToken('auth_token')->plainTextToken;
+            $user = Auth::user();
+            $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Logged in successfully.',
-            'data' => [
+            return ResponseHelper::success([
                 'user' => $user,
                 'token' => $token
-            ]
-        ]);
+            ], 'Logged in successfully');
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
@@ -151,20 +141,20 @@ class AuthController extends Controller
      *         response=200,
      *         description="Başarılı çıkış",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(property="message", type="string", example="Logged out successfully.")
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Logged out successfully")
      *         )
      *     )
      * )
      */
     public function logout(): JsonResponse
     {
-        Auth::user()->tokens()->delete();
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Logged out successfully.'
-        ]);
+        try {
+            Auth::user()->tokens()->delete();
+            return ResponseHelper::success(null, 'Logged out successfully');
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
@@ -177,7 +167,8 @@ class AuthController extends Controller
      *         response=200,
      *         description="Başarılı",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Success"),
      *             @OA\Property(
      *                 property="data",
      *                 type="object",
@@ -189,11 +180,12 @@ class AuthController extends Controller
      */
     public function me(): JsonResponse
     {
-        return response()->json([
-            'status' => 'success',
-            'data' => [
+        try {
+            return ResponseHelper::success([
                 'user' => Auth::user()
-            ]
-        ]);
+            ]);
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 }

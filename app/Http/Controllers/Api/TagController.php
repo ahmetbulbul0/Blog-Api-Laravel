@@ -8,6 +8,7 @@ use App\Http\Requests\Tag\UpdateTagRequest;
 use App\Interfaces\Services\TagServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
+use App\Helpers\ResponseHelper;
 
 /**
  * @OA\Tag(
@@ -252,22 +253,20 @@ class TagController extends Controller
      *         response=200,
      *         description="Başarılı",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(
-     *                 property="data",
-     *                 type="array",
-     *                 @OA\Items(type="object")
-     *             )
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Success"),
+     *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
      *         )
      *     )
      * )
      */
     public function tagPosts(int $id): JsonResponse
     {
-        $posts = $this->tagService->getTagPosts($id);
-        return response()->json([
-            'status' => 'success',
-            'data' => $posts
-        ]);
+        try {
+            $posts = $this->tagService->getTagPosts($id);
+            return ResponseHelper::success($posts);
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 }

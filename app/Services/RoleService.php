@@ -41,7 +41,7 @@ class RoleService implements RoleServiceInterface
 
     public function getRoleUsers($id)
     {
-        return $this->roleRepository->getRoleUsers($id);
+        return $this->roleRepository->getRoleWithUsers($id);
     }
 
     public function getUsersCount($id)

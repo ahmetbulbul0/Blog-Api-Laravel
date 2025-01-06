@@ -63,4 +63,14 @@ class CommentService implements CommentServiceInterface
     {
         return $this->commentRepository->rejectComment($id);
     }
+
+    public function getPostComments($postId)
+    {
+        return $this->commentRepository->getPostComments($postId);
+    }
+
+    public function getUserComments($userId)
+    {
+        return $this->commentRepository->getUserComments($userId);
+    }
 }

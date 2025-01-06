@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Category\StoreCategoryRequest;
 use App\Http\Requests\Category\UpdateCategoryRequest;
 use App\Interfaces\Services\CategoryServiceInterface;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Response;
 
 /**
  * @OA\Tag(
@@ -34,23 +34,21 @@ class CategoryController extends Controller
      *         response=200,
      *         description="Başarılı",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(
-     *                 property="data",
-     *                 type="array",
-     *                 @OA\Items(type="object")
-     *             )
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Success"),
+     *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
      *         )
      *     )
      * )
      */
     public function index(): JsonResponse
     {
-        $categories = $this->categoryService->getAllCategories();
-        return response()->json([
-            'status' => 'success',
-            'data' => $categories
-        ]);
+        try {
+            $categories = $this->categoryService->getAllCategories();
+            return ResponseHelper::success($categories);
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
@@ -73,7 +71,7 @@ class CategoryController extends Controller
      *         response=201,
      *         description="Kategori başarıyla oluşturuldu",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="status", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Category created successfully"),
      *             @OA\Property(property="data", type="object")
      *         )
@@ -82,12 +80,12 @@ class CategoryController extends Controller
      */
     public function store(StoreCategoryRequest $request): JsonResponse
     {
-        $category = $this->categoryService->createCategory($request->validated());
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Category created successfully',
-            'data' => $category
-        ], Response::HTTP_CREATED);
+        try {
+            $category = $this->categoryService->createCategory($request->validated());
+            return ResponseHelper::created($category, 'Category created successfully');
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
@@ -107,23 +105,24 @@ class CategoryController extends Controller
      *         response=200,
      *         description="Başarılı",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Success"),
      *             @OA\Property(property="data", type="object")
      *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Kategori bulunamadı"
      *     )
      * )
      */
     public function show(int $id): JsonResponse
     {
-        $category = $this->categoryService->getCategoryById($id);
-        return response()->json([
-            'status' => 'success',
-            'data' => $category
-        ]);
+        try {
+            $category = $this->categoryService->getCategoryById($id);
+            if (!$category) {
+                return ResponseHelper::notFound('Category not found');
+            }
+            return ResponseHelper::success($category);
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
@@ -153,25 +152,24 @@ class CategoryController extends Controller
      *         response=200,
      *         description="Kategori başarıyla güncellendi",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="status", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Category updated successfully"),
      *             @OA\Property(property="data", type="object")
      *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Kategori bulunamadı"
      *     )
      * )
      */
     public function update(UpdateCategoryRequest $request, int $id): JsonResponse
     {
-        $category = $this->categoryService->updateCategory($id, $request->validated());
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Category updated successfully',
-            'data' => $category
-        ]);
+        try {
+            $category = $this->categoryService->updateCategory($id, $request->validated());
+            if (!$category) {
+                return ResponseHelper::notFound('Category not found');
+            }
+            return ResponseHelper::success($category, 'Category updated successfully');
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
@@ -191,23 +189,23 @@ class CategoryController extends Controller
      *         response=200,
      *         description="Kategori başarıyla silindi",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="status", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Category deleted successfully")
      *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Kategori bulunamadı"
      *     )
      * )
      */
     public function destroy(int $id): JsonResponse
     {
-        $this->categoryService->deleteCategory($id);
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Category deleted successfully'
-        ]);
+        try {
+            $result = $this->categoryService->deleteCategory($id);
+            if (!$result) {
+                return ResponseHelper::notFound('Category not found');
+            }
+            return ResponseHelper::success(null, 'Category deleted successfully');
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
@@ -220,23 +218,21 @@ class CategoryController extends Controller
      *         response=200,
      *         description="Başarılı",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(
-     *                 property="data",
-     *                 type="array",
-     *                 @OA\Items(type="object")
-     *             )
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Success"),
+     *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
      *         )
      *     )
      * )
      */
     public function parentCategories(): JsonResponse
     {
-        $categories = $this->categoryService->getParentCategories();
-        return response()->json([
-            'status' => 'success',
-            'data' => $categories
-        ]);
+        try {
+            $categories = $this->categoryService->getParentCategories();
+            return ResponseHelper::success($categories);
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
@@ -256,23 +252,21 @@ class CategoryController extends Controller
      *         response=200,
      *         description="Başarılı",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(
-     *                 property="data",
-     *                 type="array",
-     *                 @OA\Items(type="object")
-     *             )
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Success"),
+     *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
      *         )
      *     )
      * )
      */
     public function subCategories(int $id): JsonResponse
     {
-        $categories = $this->categoryService->getSubCategories($id);
-        return response()->json([
-            'status' => 'success',
-            'data' => $categories
-        ]);
+        try {
+            $categories = $this->categoryService->getSubCategories($id);
+            return ResponseHelper::success($categories);
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
@@ -292,22 +286,20 @@ class CategoryController extends Controller
      *         response=200,
      *         description="Başarılı",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(
-     *                 property="data",
-     *                 type="array",
-     *                 @OA\Items(type="object")
-     *             )
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Success"),
+     *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
      *         )
      *     )
      * )
      */
     public function categoryPosts(int $id): JsonResponse
     {
-        $posts = $this->categoryService->getCategoryPosts($id);
-        return response()->json([
-            'status' => 'success',
-            'data' => $posts
-        ]);
+        try {
+            $posts = $this->categoryService->getCategoryPosts($id);
+            return ResponseHelper::success($posts);
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 }

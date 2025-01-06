@@ -48,4 +48,9 @@ class TagService implements TagServiceInterface
     {
         return $this->tagRepository->getPopularTags($limit);
     }
+
+    public function getTagPosts($id)
+    {
+        return $this->tagRepository->getTagWithPosts($id);
+    }
 }

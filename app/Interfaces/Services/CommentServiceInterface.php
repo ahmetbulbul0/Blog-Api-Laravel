@@ -14,4 +14,6 @@ interface CommentServiceInterface
     public function getRecentComments($limit = 10);
     public function approveComment($id);
     public function rejectComment($id);
+    public function getPostComments($postId);
+    public function getUserComments($userId);
 }

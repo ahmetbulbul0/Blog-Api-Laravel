@@ -59,4 +59,19 @@ class PostService implements PostServiceInterface
     {
         return $image->store('posts', 'public');
     }
+
+    public function getPopularPosts($limit = 10)
+    {
+        return $this->postRepository->getPopularPosts($limit);
+    }
+
+    public function getRecentPosts($limit = 10)
+    {
+        return $this->postRepository->getRecentPosts($limit);
+    }
+
+    public function getRelatedPosts($postId, $limit = 5)
+    {
+        return $this->postRepository->getRelatedPosts($postId, $limit);
+    }
 }

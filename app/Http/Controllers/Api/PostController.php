@@ -8,6 +8,8 @@ use App\Http\Requests\Post\UpdatePostRequest;
 use App\Interfaces\Services\PostServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
+use App\Helpers\ResponseHelper;
+use Illuminate\Http\Request;
 
 /**
  * @OA\Tag(
@@ -34,23 +36,21 @@ class PostController extends Controller
      *         response=200,
      *         description="Başarılı",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(
-     *                 property="data",
-     *                 type="array",
-     *                 @OA\Items(type="object")
-     *             )
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Success"),
+     *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
      *         )
      *     )
      * )
      */
     public function index(): JsonResponse
     {
-        $posts = $this->postService->getAllPosts();
-        return response()->json([
-            'status' => 'success',
-            'data' => $posts
-        ]);
+        try {
+            $posts = $this->postService->getAllPosts();
+            return ResponseHelper::success($posts);
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
@@ -62,21 +62,22 @@ class PostController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"title","slug","content","category_id","status"},
-     *             @OA\Property(property="title", type="string", example="My First Blog Post"),
-     *             @OA\Property(property="slug", type="string", example="my-first-blog-post"),
-     *             @OA\Property(property="content", type="string", example="This is my first blog post content."),
-     *             @OA\Property(property="excerpt", type="string", example="A brief excerpt of the post"),
+     *             required={"title","slug","content","category_id","user_id"},
+     *             @OA\Property(property="title", type="string", example="Sample Post"),
+     *             @OA\Property(property="slug", type="string", example="sample-post"),
+     *             @OA\Property(property="content", type="string", example="Post content"),
+     *             @OA\Property(property="excerpt", type="string", example="Post excerpt"),
+     *             @OA\Property(property="published_at", type="string", format="date-time"),
      *             @OA\Property(property="category_id", type="integer", example=1),
-     *             @OA\Property(property="status", type="string", enum={"draft", "published", "archived"}, example="published"),
-     *             @OA\Property(property="tags", type="array", @OA\Items(type="integer"), example={1,2,3})
+     *             @OA\Property(property="user_id", type="integer", example=1),
+     *             @OA\Property(property="tags", type="array", @OA\Items(type="integer"))
      *         )
      *     ),
      *     @OA\Response(
      *         response=201,
      *         description="Gönderi başarıyla oluşturuldu",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="status", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Post created successfully"),
      *             @OA\Property(property="data", type="object")
      *         )
@@ -85,18 +86,18 @@ class PostController extends Controller
      */
     public function store(StorePostRequest $request): JsonResponse
     {
-        $post = $this->postService->createPost($request->validated());
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Post created successfully',
-            'data' => $post
-        ], Response::HTTP_CREATED);
+        try {
+            $post = $this->postService->createPost($request->validated());
+            return ResponseHelper::created($post, 'Post created successfully');
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
      * @OA\Get(
      *     path="/api/posts/{id}",
-     *     summary="Belirli bir gönderiyi getir",
+     *     summary="Gönderi detaylarını getir",
      *     tags={"Posts"},
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
@@ -110,23 +111,24 @@ class PostController extends Controller
      *         response=200,
      *         description="Başarılı",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Success"),
      *             @OA\Property(property="data", type="object")
      *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Gönderi bulunamadı"
      *     )
      * )
      */
     public function show(int $id): JsonResponse
     {
-        $post = $this->postService->getPostById($id);
-        return response()->json([
-            'status' => 'success',
-            'data' => $post
-        ]);
+        try {
+            $post = $this->postService->getPostById($id);
+            if (!$post) {
+                return ResponseHelper::notFound('Post not found');
+            }
+            return ResponseHelper::success($post);
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
@@ -145,39 +147,39 @@ class PostController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"title","slug","content","category_id","status"},
-     *             @OA\Property(property="title", type="string", example="Updated Blog Post"),
-     *             @OA\Property(property="slug", type="string", example="updated-blog-post"),
-     *             @OA\Property(property="content", type="string", example="Updated content."),
+     *             required={"title","slug","content","category_id","user_id"},
+     *             @OA\Property(property="title", type="string", example="Updated Post"),
+     *             @OA\Property(property="slug", type="string", example="updated-post"),
+     *             @OA\Property(property="content", type="string", example="Updated content"),
      *             @OA\Property(property="excerpt", type="string", example="Updated excerpt"),
+     *             @OA\Property(property="published_at", type="string", format="date-time"),
      *             @OA\Property(property="category_id", type="integer", example=1),
-     *             @OA\Property(property="status", type="string", enum={"draft", "published", "archived"}, example="published"),
-     *             @OA\Property(property="tags", type="array", @OA\Items(type="integer"), example={1,2,3})
+     *             @OA\Property(property="user_id", type="integer", example=1),
+     *             @OA\Property(property="tags", type="array", @OA\Items(type="integer"))
      *         )
      *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Gönderi başarıyla güncellendi",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="status", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Post updated successfully"),
      *             @OA\Property(property="data", type="object")
      *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Gönderi bulunamadı"
      *     )
      * )
      */
     public function update(UpdatePostRequest $request, int $id): JsonResponse
     {
-        $post = $this->postService->updatePost($id, $request->validated());
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Post updated successfully',
-            'data' => $post
-        ]);
+        try {
+            $post = $this->postService->updatePost($id, $request->validated());
+            if (!$post) {
+                return ResponseHelper::notFound('Post not found');
+            }
+            return ResponseHelper::success($post, 'Post updated successfully');
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
@@ -197,23 +199,23 @@ class PostController extends Controller
      *         response=200,
      *         description="Gönderi başarıyla silindi",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="status", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="Post deleted successfully")
      *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Gönderi bulunamadı"
      *     )
      * )
      */
     public function destroy(int $id): JsonResponse
     {
-        $this->postService->deletePost($id);
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Post deleted successfully'
-        ]);
+        try {
+            $result = $this->postService->deletePost($id);
+            if (!$result) {
+                return ResponseHelper::notFound('Post not found');
+            }
+            return ResponseHelper::success(null, 'Post deleted successfully');
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
@@ -226,23 +228,21 @@ class PostController extends Controller
      *         response=200,
      *         description="Başarılı",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(
-     *                 property="data",
-     *                 type="array",
-     *                 @OA\Items(type="object")
-     *             )
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Success"),
+     *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
      *         )
      *     )
      * )
      */
-    public function published(): JsonResponse
+    public function publishedPosts(): JsonResponse
     {
-        $posts = $this->postService->getPublishedPosts();
-        return response()->json([
-            'status' => 'success',
-            'data' => $posts
-        ]);
+        try {
+            $posts = $this->postService->getPublishedPosts();
+            return ResponseHelper::success($posts);
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
@@ -255,23 +255,21 @@ class PostController extends Controller
      *         response=200,
      *         description="Başarılı",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(
-     *                 property="data",
-     *                 type="array",
-     *                 @OA\Items(type="object")
-     *             )
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Success"),
+     *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
      *         )
      *     )
      * )
      */
-    public function drafts(): JsonResponse
+    public function draftPosts(): JsonResponse
     {
-        $posts = $this->postService->getDraftPosts();
-        return response()->json([
-            'status' => 'success',
-            'data' => $posts
-        ]);
+        try {
+            $posts = $this->postService->getDraftPosts();
+            return ResponseHelper::success($posts);
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
@@ -284,22 +282,132 @@ class PostController extends Controller
      *         response=200,
      *         description="Başarılı",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(
-     *                 property="data",
-     *                 type="array",
-     *                 @OA\Items(type="object")
-     *             )
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Success"),
+     *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
      *         )
      *     )
      * )
      */
-    public function archived(): JsonResponse
+    public function archivedPosts(): JsonResponse
     {
-        $posts = $this->postService->getArchivedPosts();
-        return response()->json([
-            'status' => 'success',
-            'data' => $posts
-        ]);
+        try {
+            $posts = $this->postService->getArchivedPosts();
+            return ResponseHelper::success($posts);
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/posts/popular",
+     *     summary="En popüler gönderileri listele",
+     *     tags={"Posts"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="limit",
+     *         in="query",
+     *         required=false,
+     *         description="Limit",
+     *         @OA\Schema(type="integer", default=10)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Başarılı",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Success"),
+     *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
+     *         )
+     *     )
+     * )
+     */
+    public function popularPosts(Request $request): JsonResponse
+    {
+        try {
+            $limit = $request->get('limit', 10);
+            $posts = $this->postService->getPopularPosts($limit);
+            return ResponseHelper::success($posts);
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/posts/recent",
+     *     summary="En son gönderileri listele",
+     *     tags={"Posts"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="limit",
+     *         in="query",
+     *         required=false,
+     *         description="Limit",
+     *         @OA\Schema(type="integer", default=10)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Başarılı",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Success"),
+     *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
+     *         )
+     *     )
+     * )
+     */
+    public function recentPosts(Request $request): JsonResponse
+    {
+        try {
+            $limit = $request->get('limit', 10);
+            $posts = $this->postService->getRecentPosts($limit);
+            return ResponseHelper::success($posts);
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/posts/{id}/related",
+     *     summary="İlgili gönderileri listele",
+     *     tags={"Posts"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Gönderi ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="limit",
+     *         in="query",
+     *         required=false,
+     *         description="Limit",
+     *         @OA\Schema(type="integer", default=5)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Başarılı",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Success"),
+     *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
+     *         )
+     *     )
+     * )
+     */
+    public function relatedPosts(int $id, Request $request): JsonResponse
+    {
+        try {
+            $limit = $request->get('limit', 5);
+            $posts = $this->postService->getRelatedPosts($id, $limit);
+            return ResponseHelper::success($posts);
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 }

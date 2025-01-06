@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Interfaces\Services\PostViewServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
+use Illuminate\Http\Request;
+use App\Helpers\ResponseHelper;
 
 /**
  * @OA\Tag(
@@ -89,41 +91,47 @@ class PostViewController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/post-views/most-viewed",
+     *     path="/api/posts/most-viewed",
      *     summary="En çok görüntülenen gönderileri listele",
-     *     tags={"Post Views"},
+     *     tags={"PostViews"},
      *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="limit",
+     *         in="query",
+     *         required=false,
+     *         description="Limit",
+     *         @OA\Schema(type="integer", default=10)
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Başarılı",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(
-     *                 property="data",
-     *                 type="array",
-     *                 @OA\Items(type="object")
-     *             )
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Success"),
+     *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
      *         )
      *     )
      * )
      */
-    public function mostViewedPosts(): JsonResponse
+    public function mostViewedPosts(Request $request): JsonResponse
     {
-        $posts = $this->postViewService->getMostViewedPosts();
-        return response()->json([
-            'status' => 'success',
-            'data' => $posts
-        ]);
+        try {
+            $limit = $request->get('limit', 10);
+            $posts = $this->postViewService->getMostViewedPosts($limit);
+            return ResponseHelper::success($posts);
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
      * @OA\Get(
-     *     path="/api/posts/{postId}/views",
-     *     summary="Gönderi görüntülenmelerini listele",
-     *     tags={"Post Views"},
+     *     path="/api/posts/{id}/views",
+     *     summary="Gönderinin görüntülenme detaylarını listele",
+     *     tags={"PostViews"},
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
-     *         name="postId",
+     *         name="id",
      *         in="path",
      *         required=true,
      *         description="Gönderi ID",
@@ -133,33 +141,31 @@ class PostViewController extends Controller
      *         response=200,
      *         description="Başarılı",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(
-     *                 property="data",
-     *                 type="array",
-     *                 @OA\Items(type="object")
-     *             )
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Success"),
+     *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
      *         )
      *     )
      * )
      */
-    public function postViews(int $postId): JsonResponse
+    public function postViews(int $id): JsonResponse
     {
-        $views = $this->postViewService->getPostViews($postId);
-        return response()->json([
-            'status' => 'success',
-            'data' => $views
-        ]);
+        try {
+            $views = $this->postViewService->getPostViews($id);
+            return ResponseHelper::success($views);
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
      * @OA\Get(
-     *     path="/api/posts/{postId}/views/count",
-     *     summary="Gönderi görüntülenme sayısını getir",
-     *     tags={"Post Views"},
+     *     path="/api/posts/{id}/views/count",
+     *     summary="Gönderinin toplam görüntülenme sayısını getir",
+     *     tags={"PostViews"},
      *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
-     *         name="postId",
+     *         name="id",
      *         in="path",
      *         required=true,
      *         description="Gönderi ID",
@@ -169,19 +175,23 @@ class PostViewController extends Controller
      *         response=200,
      *         description="Başarılı",
      *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(property="data", type="integer", example=42)
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Success"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="count", type="integer", example=100)
+     *             )
      *         )
      *     )
      * )
      */
-    public function viewsCount(int $postId): JsonResponse
+    public function viewsCount(int $id): JsonResponse
     {
-        $count = $this->postViewService->getViewsCount($postId);
-        return response()->json([
-            'status' => 'success',
-            'data' => $count
-        ]);
+        try {
+            $count = $this->postViewService->getViewsCount($id);
+            return ResponseHelper::success(['count' => $count]);
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**

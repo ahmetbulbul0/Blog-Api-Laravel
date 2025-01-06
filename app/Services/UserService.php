@@ -47,12 +47,12 @@ class UserService implements UserServiceInterface
 
     public function getUserPosts($id)
     {
-        return $this->userRepository->getUserPosts($id);
+        return $this->userRepository->getUserWithPosts($id);
     }
 
     public function getUserComments($id)
     {
-        return $this->userRepository->getUserComments($id);
+        return $this->userRepository->getUserWithComments($id);
     }
 
     public function assignRole($userId, $roleId)
