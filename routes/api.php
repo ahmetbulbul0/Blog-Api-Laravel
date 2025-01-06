@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\PostViewController;
+use App\Http\Controllers\Api\AuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,7 +16,15 @@ use App\Http\Controllers\Api\PostViewController;
 |--------------------------------------------------------------------------
 */
 
+// Auth routes
+Route::post('auth/register', [AuthController::class, 'register']);
+Route::post('auth/login', [AuthController::class, 'login']);
+
 Route::middleware('auth:sanctum')->group(function () {
+    // Auth routes
+    Route::post('auth/logout', [AuthController::class, 'logout']);
+    Route::get('auth/me', [AuthController::class, 'me']);
+
     // Post routes
     Route::get('posts/published', [PostController::class, 'published']);
     Route::get('posts/drafts', [PostController::class, 'drafts']);

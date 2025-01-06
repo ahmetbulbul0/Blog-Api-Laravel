@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -15,6 +17,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role_id'
     ];
 
     protected $hidden = [
@@ -27,41 +30,23 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    public function roles()
+    public function role(): BelongsTo
     {
-        return $this->belongsToMany(Role::class);
+        return $this->belongsTo(Role::class);
     }
 
-    public function posts()
+    public function posts(): HasMany
     {
         return $this->hasMany(Post::class);
     }
 
-    public function comments()
+    public function comments(): HasMany
     {
         return $this->hasMany(Comment::class);
     }
 
-    public function hasRole($role)
+    public function postViews(): HasMany
     {
-        if (is_string($role)) {
-            return $this->roles->contains('name', $role);
-        }
-        return !!$role->intersect($this->roles)->count();
-    }
-
-    public function isAdmin()
-    {
-        return $this->hasRole(Role::ADMIN);
-    }
-
-    public function isAuthor()
-    {
-        return $this->hasRole(Role::AUTHOR);
-    }
-
-    public function isVisitor()
-    {
-        return $this->hasRole(Role::VISITOR);
+        return $this->hasMany(PostView::class);
     }
 }
