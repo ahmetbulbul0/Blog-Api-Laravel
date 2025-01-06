@@ -2,10 +2,8 @@
 
 namespace App\Services;
 
-use App\Interfaces\Services\PostServiceInterface;
 use App\Interfaces\Repositories\PostRepositoryInterface;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
+use App\Interfaces\Services\PostServiceInterface;
 use Illuminate\Http\UploadedFile;
 
 class PostService implements PostServiceInterface
@@ -22,76 +20,24 @@ class PostService implements PostServiceInterface
         return $this->postRepository->getAll();
     }
 
-    public function getPostById($id)
+    public function getPostById(int $id)
     {
-        return $this->postRepository->findById($id);
+        return $this->postRepository->getPostById($id);
     }
 
     public function createPost(array $data)
     {
-        // Slug oluştur
-        $data['slug'] = Str::slug($data['title']);
-        
-        // Kullanıcı ID'sini ekle
-        $data['user_id'] = auth()->id();
-
-        // Eğer resim varsa işle
-        if (isset($data['featured_image']) && $data['featured_image'] instanceof UploadedFile) {
-            $data['featured_image'] = $this->handlePostImage($data['featured_image']);
-        }
-
-        // Post'u oluştur
-        $post = $this->postRepository->create($data);
-
-        // Etiketleri ekle
-        if (isset($data['tags'])) {
-            $this->manageTags($post->id, $data['tags']);
-        }
-
-        return $post;
+        return $this->postRepository->createPost($data);
     }
 
-    public function updatePost($id, array $data)
+    public function updatePost(int $id, array $data)
     {
-        // Mevcut postu al
-        $post = $this->getPostById($id);
-
-        // Slug güncelle
-        $data['slug'] = Str::slug($data['title']);
-
-        // Eğer yeni resim yüklendiyse
-        if (isset($data['featured_image']) && $data['featured_image'] instanceof UploadedFile) {
-            // Eski resmi sil
-            if ($post->featured_image) {
-                $this->removePostImage($post->id);
-            }
-            // Yeni resmi kaydet
-            $data['featured_image'] = $this->handlePostImage($data['featured_image']);
-        }
-
-        // Postu güncelle
-        $updated = $this->postRepository->update($id, $data);
-
-        // Etiketleri güncelle
-        if (isset($data['tags'])) {
-            $this->manageTags($id, $data['tags']);
-        }
-
-        return $updated;
+        return $this->postRepository->updatePost($id, $data);
     }
 
-    public function deletePost($id)
+    public function deletePost(int $id)
     {
-        // Resmi sil
-        $this->removePostImage($id);
-
-        // Postu sil
-        return $this->postRepository->delete($id);
-    }
-
-    public function getPostBySlug($slug)
-    {
-        return $this->postRepository->findBySlug($slug);
+        return $this->postRepository->deletePost($id);
     }
 
     public function getPublishedPosts()
@@ -113,17 +59,4 @@ class PostService implements PostServiceInterface
     {
         return $image->store('posts', 'public');
     }
-
-    public function removePostImage($postId)
-    {
-        $post = $this->getPostById($postId);
-        if ($post->featured_image) {
-            Storage::disk('public')->delete($post->featured_image);
-        }
-    }
-
-    public function manageTags($postId, array $tagIds)
-    {
-        $this->postRepository->syncTags($postId, $tagIds);
-    }
-} 
+}

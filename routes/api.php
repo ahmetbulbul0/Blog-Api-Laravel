@@ -16,57 +16,74 @@ use App\Http\Controllers\Api\AuthController;
 |--------------------------------------------------------------------------
 */
 
-// Auth routes
-Route::post('auth/register', [AuthController::class, 'register']);
-Route::post('auth/login', [AuthController::class, 'login']);
+// Public routes
+Route::prefix('auth')->controller(AuthController::class)->name("auth.")->group(function () {
+    Route::post('register', 'register')->name("register");
+    Route::post('login', 'login')->name("login");
+});
 
+// Protected routes
 Route::middleware('auth:sanctum')->group(function () {
     // Auth routes
-    Route::post('auth/logout', [AuthController::class, 'logout']);
-    Route::get('auth/me', [AuthController::class, 'me']);
+    Route::prefix('auth')->group(function () {
+        Route::post('logout', [AuthController::class, 'logout']);
+        Route::get('me', [AuthController::class, 'me']);
+    });
 
     // Post routes
-    Route::get('posts/published', [PostController::class, 'published']);
-    Route::get('posts/drafts', [PostController::class, 'drafts']);
-    Route::get('posts/archived', [PostController::class, 'archived']);
+    Route::prefix('posts')->group(function () {
+        Route::get('published', [PostController::class, 'published']);
+        Route::get('drafts', [PostController::class, 'drafts']);
+        Route::get('archived', [PostController::class, 'archived']);
+        Route::get('{id}/views', [PostViewController::class, 'postViews']);
+        Route::get('{id}/views/count', [PostViewController::class, 'viewsCount']);
+        Route::get('{id}/views/date-range', [PostViewController::class, 'viewsByDateRange']);
+    });
     Route::apiResource('posts', PostController::class);
 
     // Category routes
-    Route::get('categories/parent', [CategoryController::class, 'parentCategories']);
-    Route::get('categories/{id}/sub', [CategoryController::class, 'subCategories']);
-    Route::get('categories/{id}/posts', [CategoryController::class, 'categoryPosts']);
+    Route::prefix('categories')->group(function () {
+        Route::get('parent', [CategoryController::class, 'parentCategories']);
+        Route::get('{id}/sub', [CategoryController::class, 'subCategories']);
+        Route::get('{id}/posts', [CategoryController::class, 'categoryPosts']);
+    });
     Route::apiResource('categories', CategoryController::class);
 
     // Tag routes
-    Route::get('tags/popular', [TagController::class, 'popularTags']);
-    Route::get('tags/{id}/posts', [TagController::class, 'tagPosts']);
+    Route::prefix('tags')->group(function () {
+        Route::get('popular', [TagController::class, 'popularTags']);
+        Route::get('{id}/posts', [TagController::class, 'tagPosts']);
+    });
     Route::apiResource('tags', TagController::class);
 
     // Comment routes
-    Route::get('comments/recent', [CommentController::class, 'recentComments']);
-    Route::get('posts/{postId}/comments', [CommentController::class, 'postComments']);
-    Route::get('users/{userId}/comments', [CommentController::class, 'userComments']);
-    Route::patch('comments/{id}/approve', [CommentController::class, 'approve']);
-    Route::patch('comments/{id}/reject', [CommentController::class, 'reject']);
+    Route::prefix('comments')->group(function () {
+        Route::get('recent', [CommentController::class, 'recentComments']);
+        Route::patch('{id}/approve', [CommentController::class, 'approve']);
+        Route::patch('{id}/reject', [CommentController::class, 'reject']);
+    });
     Route::apiResource('comments', CommentController::class);
 
     // User routes
-    Route::get('users/{id}/posts', [UserController::class, 'userPosts']);
-    Route::get('users/{id}/comments', [UserController::class, 'userComments']);
-    Route::post('users/{userId}/roles/{roleId}', [UserController::class, 'assignRole']);
-    Route::delete('users/{userId}/roles/{roleId}', [UserController::class, 'removeRole']);
+    Route::prefix('users')->group(function () {
+        Route::get('{id}/posts', [UserController::class, 'userPosts']);
+        Route::get('{id}/comments', [UserController::class, 'userComments']);
+        Route::get('{id}/views', [PostViewController::class, 'userViews']);
+        Route::post('{userId}/roles/{roleId}', [UserController::class, 'assignRole']);
+        Route::delete('{userId}/roles/{roleId}', [UserController::class, 'removeRole']);
+    });
     Route::apiResource('users', UserController::class);
 
     // Role routes
-    Route::get('roles/{id}/users', [RoleController::class, 'roleUsers']);
-    Route::get('roles/{id}/users/count', [RoleController::class, 'usersCount']);
+    Route::prefix('roles')->group(function () {
+        Route::get('{id}/users', [RoleController::class, 'roleUsers']);
+        Route::get('{id}/users/count', [RoleController::class, 'usersCount']);
+    });
     Route::apiResource('roles', RoleController::class);
 
     // PostView routes
-    Route::get('post-views/most-viewed', [PostViewController::class, 'mostViewedPosts']);
-    Route::get('posts/{postId}/views', [PostViewController::class, 'postViews']);
-    Route::get('posts/{postId}/views/count', [PostViewController::class, 'viewsCount']);
-    Route::get('posts/{postId}/views/date-range', [PostViewController::class, 'viewsByDateRange']);
-    Route::get('users/{userId}/views', [PostViewController::class, 'userViews']);
+    Route::prefix('post-views')->group(function () {
+        Route::get('most-viewed', [PostViewController::class, 'mostViewedPosts']);
+    });
     Route::apiResource('post-views', PostViewController::class)->except(['update']);
 });

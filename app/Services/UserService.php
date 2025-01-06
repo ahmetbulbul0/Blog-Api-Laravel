@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Interfaces\Services\UserServiceInterface;
 use App\Interfaces\Repositories\UserRepositoryInterface;
 use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 
 class UserService implements UserServiceInterface
 {
@@ -62,5 +63,10 @@ class UserService implements UserServiceInterface
     public function removeRole($userId, $roleId)
     {
         return $this->userRepository->removeRole($userId, $roleId);
+    }
+
+    public function create(array $data)
+    {
+        return User::create($data);
     }
 }

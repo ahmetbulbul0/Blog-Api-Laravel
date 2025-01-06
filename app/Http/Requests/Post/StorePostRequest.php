@@ -16,17 +16,14 @@ class StorePostRequest extends FormRequest
     {
         return [
             'title' => ['required', 'string', 'max:255'],
+            'slug' => ['required', 'string', 'max:255', 'unique:posts'],
             'content' => ['required', 'string'],
             'excerpt' => ['nullable', 'string'],
-            'featured_image' => ['nullable', 'image', 'max:2048'], // 2MB max
+            'published_at' => ['nullable', 'date'],
             'category_id' => ['required', 'exists:categories,id'],
+            'user_id' => ['required', 'exists:users,id'],
             'tags' => ['nullable', 'array'],
-            'tags.*' => ['exists:tags,id'],
-            'meta_title' => ['nullable', 'string', 'max:60'],
-            'meta_description' => ['nullable', 'string', 'max:160'],
-            'meta_keywords' => ['nullable', 'string', 'max:255'],
-            'status' => ['required', 'in:draft,published'],
-            'published_at' => ['nullable', 'date', 'required_if:status,published']
+            'tags.*' => ['exists:tags,id']
         ];
     }
 

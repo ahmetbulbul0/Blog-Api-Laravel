@@ -20,24 +20,24 @@ class RoleSeeder extends Seeder
         $admin = User::factory()->create([
             'name' => 'Admin User',
             'email' => 'admin@example.com',
-            'password' => Hash::make('password')
+            'password' => Hash::make('password'),
+            'role_id' => $adminRole->id
         ]);
-        $admin->roles()->attach($adminRole);
 
         // Yazar kullanıcısı oluştur
         $author = User::factory()->create([
             'name' => 'Author User',
             'email' => 'author@example.com',
-            'password' => Hash::make('password')
+            'password' => Hash::make('password'),
+            'role_id' => $authorRole->id
         ]);
-        $author->roles()->attach($authorRole);
 
         // Ziyaretçi kullanıcısı oluştur
         $visitor = User::factory()->create([
             'name' => 'Visitor User',
             'email' => 'visitor@example.com',
-            'password' => Hash::make('password')
+            'password' => Hash::make('password'),
+            'role_id' => $visitorRole->id
         ]);
-        $visitor->roles()->attach($visitorRole);
     }
 }

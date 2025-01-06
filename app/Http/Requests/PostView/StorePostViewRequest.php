@@ -14,10 +14,10 @@ class StorePostViewRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'post_id' => 'required|exists:posts,id',
-            'user_id' => 'nullable|exists:users,id',
-            'ip_address' => 'required|ip',
-            'user_agent' => 'required|string'
+            'post_id' => ['required', 'exists:posts,id'],
+            'user_id' => ['nullable', 'exists:users,id'],
+            'ip_address' => ['required', 'ip'],
+            'user_agent' => ['nullable', 'string']
         ];
     }
 }

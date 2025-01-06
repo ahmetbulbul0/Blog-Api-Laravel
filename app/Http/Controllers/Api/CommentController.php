@@ -9,6 +9,12 @@ use App\Interfaces\Services\CommentServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 
+/**
+ * @OA\Tag(
+ *     name="Comments",
+ *     description="Blog yorumları yönetimi için API endpoint'leri"
+ * )
+ */
 class CommentController extends Controller
 {
     protected $commentService;
@@ -16,9 +22,28 @@ class CommentController extends Controller
     public function __construct(CommentServiceInterface $commentService)
     {
         $this->commentService = $commentService;
-        $this->middleware('auth:sanctum');
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/comments",
+     *     summary="Tüm yorumları listele",
+     *     tags={"Comments"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Başarılı",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(type="object")
+     *             )
+     *         )
+     *     )
+     * )
+     */
     public function index(): JsonResponse
     {
         $comments = $this->commentService->getAllComments();
@@ -28,17 +53,70 @@ class CommentController extends Controller
         ]);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/comments",
+     *     summary="Yeni yorum oluştur",
+     *     tags={"Comments"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"post_id","content"},
+     *             @OA\Property(property="post_id", type="integer", example=1),
+     *             @OA\Property(property="content", type="string", example="This is a great post!"),
+     *             @OA\Property(property="parent_id", type="integer", example=null)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Yorum başarıyla oluşturuldu",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Comment created successfully"),
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     )
+     * )
+     */
     public function store(StoreCommentRequest $request): JsonResponse
     {
         $comment = $this->commentService->createComment($request->validated());
         return response()->json([
             'status' => 'success',
-            'message' => 'Comment created successfully.',
+            'message' => 'Comment created successfully',
             'data' => $comment
         ], Response::HTTP_CREATED);
     }
 
-    public function show($id): JsonResponse
+    /**
+     * @OA\Get(
+     *     path="/api/comments/{id}",
+     *     summary="Belirli bir yorumu getir",
+     *     tags={"Comments"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Yorum ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Başarılı",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Yorum bulunamadı"
+     *     )
+     * )
+     */
+    public function show(int $id): JsonResponse
     {
         $comment = $this->commentService->getCommentById($id);
         return response()->json([
@@ -47,43 +125,107 @@ class CommentController extends Controller
         ]);
     }
 
-    public function update(UpdateCommentRequest $request, $id): JsonResponse
+    /**
+     * @OA\Put(
+     *     path="/api/comments/{id}",
+     *     summary="Yorum güncelle",
+     *     tags={"Comments"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Yorum ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"content"},
+     *             @OA\Property(property="content", type="string", example="Updated comment content")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Yorum başarıyla güncellendi",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Comment updated successfully"),
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Yorum bulunamadı"
+     *     )
+     * )
+     */
+    public function update(UpdateCommentRequest $request, int $id): JsonResponse
     {
         $comment = $this->commentService->updateComment($id, $request->validated());
         return response()->json([
             'status' => 'success',
-            'message' => 'Comment updated successfully.',
+            'message' => 'Comment updated successfully',
             'data' => $comment
         ]);
     }
 
-    public function destroy($id): JsonResponse
+    /**
+     * @OA\Delete(
+     *     path="/api/comments/{id}",
+     *     summary="Yorum sil",
+     *     tags={"Comments"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Yorum ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Yorum başarıyla silindi",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Comment deleted successfully")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Yorum bulunamadı"
+     *     )
+     * )
+     */
+    public function destroy(int $id): JsonResponse
     {
         $this->commentService->deleteComment($id);
         return response()->json([
             'status' => 'success',
-            'message' => 'Comment deleted successfully.'
-        ], Response::HTTP_NO_CONTENT);
-    }
-
-    public function postComments($postId): JsonResponse
-    {
-        $comments = $this->commentService->getCommentsByPost($postId);
-        return response()->json([
-            'status' => 'success',
-            'data' => $comments
+            'message' => 'Comment deleted successfully'
         ]);
     }
 
-    public function userComments($userId): JsonResponse
-    {
-        $comments = $this->commentService->getCommentsByUser($userId);
-        return response()->json([
-            'status' => 'success',
-            'data' => $comments
-        ]);
-    }
-
+    /**
+     * @OA\Get(
+     *     path="/api/comments/recent",
+     *     summary="Son yorumları listele",
+     *     tags={"Comments"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Başarılı",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(type="object")
+     *             )
+     *         )
+     *     )
+     * )
+     */
     public function recentComments(): JsonResponse
     {
         $comments = $this->commentService->getRecentComments();
@@ -93,22 +235,142 @@ class CommentController extends Controller
         ]);
     }
 
-    public function approve($id): JsonResponse
+    /**
+     * @OA\Get(
+     *     path="/api/posts/{postId}/comments",
+     *     summary="Gönderi yorumlarını listele",
+     *     tags={"Comments"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="postId",
+     *         in="path",
+     *         required=true,
+     *         description="Gönderi ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Başarılı",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(type="object")
+     *             )
+     *         )
+     *     )
+     * )
+     */
+    public function postComments(int $postId): JsonResponse
+    {
+        $comments = $this->commentService->getPostComments($postId);
+        return response()->json([
+            'status' => 'success',
+            'data' => $comments
+        ]);
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/users/{userId}/comments",
+     *     summary="Kullanıcı yorumlarını listele",
+     *     tags={"Comments"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="userId",
+     *         in="path",
+     *         required=true,
+     *         description="Kullanıcı ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Başarılı",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(type="object")
+     *             )
+     *         )
+     *     )
+     * )
+     */
+    public function userComments(int $userId): JsonResponse
+    {
+        $comments = $this->commentService->getUserComments($userId);
+        return response()->json([
+            'status' => 'success',
+            'data' => $comments
+        ]);
+    }
+
+    /**
+     * @OA\Patch(
+     *     path="/api/comments/{id}/approve",
+     *     summary="Yorumu onayla",
+     *     tags={"Comments"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Yorum ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Yorum başarıyla onaylandı",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Comment approved successfully"),
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     )
+     * )
+     */
+    public function approve(int $id): JsonResponse
     {
         $comment = $this->commentService->approveComment($id);
         return response()->json([
             'status' => 'success',
-            'message' => 'Comment approved successfully.',
+            'message' => 'Comment approved successfully',
             'data' => $comment
         ]);
     }
 
-    public function reject($id): JsonResponse
+    /**
+     * @OA\Patch(
+     *     path="/api/comments/{id}/reject",
+     *     summary="Yorumu reddet",
+     *     tags={"Comments"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Yorum ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Yorum başarıyla reddedildi",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Comment rejected successfully"),
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     )
+     * )
+     */
+    public function reject(int $id): JsonResponse
     {
         $comment = $this->commentService->rejectComment($id);
         return response()->json([
             'status' => 'success',
-            'message' => 'Comment rejected successfully.',
+            'message' => 'Comment rejected successfully',
             'data' => $comment
         ]);
     }
