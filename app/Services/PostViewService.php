@@ -14,42 +14,42 @@ class PostViewService implements PostViewServiceInterface
         $this->postViewRepository = $postViewRepository;
     }
 
-    public function getAllViews()
+    public function getAllPostViews()
     {
         return $this->postViewRepository->getAll();
     }
 
-    public function getViewById($id)
+    public function getPostViewById($id)
     {
         return $this->postViewRepository->findById($id);
     }
 
-    public function createView(array $data)
+    public function createPostView(array $data)
     {
         return $this->postViewRepository->create($data);
     }
 
-    public function deleteView($id)
+    public function deletePostView($id)
     {
         return $this->postViewRepository->delete($id);
     }
 
-    public function getViewsByPost($postId)
+    public function getPostViewsByPost($postId)
     {
         return $this->postViewRepository->getViewsByPost($postId);
     }
 
-    public function getViewsByUser($userId)
+    public function getPostViewsByUser($userId)
     {
         return $this->postViewRepository->getViewsByUser($userId);
     }
 
-    public function getViewsCount($postId)
+    public function getPostViewsCount($postId)
     {
         return $this->postViewRepository->getViewsCount($postId);
     }
 
-    public function getViewsByDateRange($postId, $startDate, $endDate)
+    public function getPostViewsByDateRange($postId, $startDate, $endDate)
     {
         return $this->postViewRepository->getViewsByDateRange($postId, $startDate, $endDate);
     }

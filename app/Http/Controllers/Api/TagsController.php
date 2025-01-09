@@ -18,7 +18,7 @@ use App\Http\Resources\PostResource;
  *     description="Blog etiketleri yönetimi için API endpoint'leri"
  * )
  */
-class TagController extends Controller
+class TagsController extends Controller
 {
     protected $tagService;
 

@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Interfaces\Services\PostViewServiceInterface;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Response;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use App\Helpers\ResponseHelper;
+use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Controller;
 use App\Http\Resources\PostViewResource;
+use App\Http\Requests\PostView\StorePostViewRequest;
+use App\Interfaces\Services\PostViewServiceInterface;
 
 /**
  * @OA\Tag(
@@ -16,7 +17,7 @@ use App\Http\Resources\PostViewResource;
  *     description="Blog gönderi görüntülenme yönetimi için API endpoint'leri"
  * )
  */
-class PostViewController extends Controller
+class PostViewsController extends Controller
 {
     protected $postViewService;
 
@@ -81,14 +82,49 @@ class PostViewController extends Controller
      *     )
      * )
      */
-    public function store(): JsonResponse
+    public function store(StorePostViewRequest $request): JsonResponse
     {
-        $view = $this->postViewService->createPostView();
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Post view created successfully',
-            'data' => $view
-        ], Response::HTTP_CREATED);
+        $view = $this->postViewService->createPostView($request->validated());
+        return ResponseHelper::created($view);
+    }
+
+    /**
+     * @OA\Get(
+     *     path="/api/post-views/{id}",
+     *     summary="Belirli bir görüntülenme detayını getir",
+     *     tags={"Post Views"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Görüntülenme ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Başarılı",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object"
+     *             )
+     *         )
+     *     )
+     * )
+     */
+    public function show(int $id): JsonResponse
+    {
+        try {
+            $postView = $this->postViewService->getPostViewById($id);
+            if (!$postView) {
+                return ResponseHelper::notFound('Post view not found');
+            }
+            return ResponseHelper::success(new PostViewResource($postView));
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
     }
 
     /**
@@ -150,10 +186,10 @@ class PostViewController extends Controller
      *     )
      * )
      */
-    public function postViews(int $id): JsonResponse
+    public function postViews(int $postId): JsonResponse
     {
         try {
-            $views = $this->postViewService->getPostViews($id);
+            $views = $this->postViewService->getPostViews($postId);
             return ResponseHelper::success($views);
         } catch (\Exception $e) {
             return ResponseHelper::serverError($e->getMessage());
@@ -186,10 +222,10 @@ class PostViewController extends Controller
      *     )
      * )
      */
-    public function viewsCount(int $id): JsonResponse
+    public function viewsCount(int $postId): JsonResponse
     {
         try {
-            $count = $this->postViewService->getViewsCount($id);
+            $count = $this->postViewService->getPostViewsCount($postId);
             return ResponseHelper::success(['count' => $count]);
         } catch (\Exception $e) {
             return ResponseHelper::serverError($e->getMessage());
@@ -239,11 +275,8 @@ class PostViewController extends Controller
      */
     public function viewsByDateRange(int $postId): JsonResponse
     {
-        $views = $this->postViewService->getViewsByDateRange($postId, request('start_date'), request('end_date'));
-        return response()->json([
-            'status' => 'success',
-            'data' => $views
-        ]);
+        $views = $this->postViewService->getPostViewsByDateRange($postId, request('start_date'), request('end_date'));
+        return ResponseHelper::success($views);
     }
 
     /**
@@ -275,49 +308,7 @@ class PostViewController extends Controller
      */
     public function userViews(int $userId): JsonResponse
     {
-        $views = $this->postViewService->getUserViews($userId);
-        return response()->json([
-            'status' => 'success',
-            'data' => $views
-        ]);
-    }
-
-    /**
-     * @OA\Get(
-     *     path="/api/post-views/{id}",
-     *     summary="Belirli bir görüntülenme detayını getir",
-     *     tags={"Post Views"},
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         description="Görüntülenme ID",
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Başarılı",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="string", example="success"),
-     *             @OA\Property(
-     *                 property="data",
-     *                 type="object"
-     *             )
-     *         )
-     *     )
-     * )
-     */
-    public function show(int $id): JsonResponse
-    {
-        try {
-            $postView = $this->postViewService->getPostViewById($id);
-            if (!$postView) {
-                return ResponseHelper::notFound('Post view not found');
-            }
-            return ResponseHelper::success(new PostViewResource($postView));
-        } catch (\Exception $e) {
-            return ResponseHelper::serverError($e->getMessage());
-        }
+        $views = $this->postViewService->getPostViewsByUser($userId);
+        return ResponseHelper::success($views);
     }
 }

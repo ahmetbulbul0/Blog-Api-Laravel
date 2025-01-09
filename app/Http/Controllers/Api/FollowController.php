@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class FollowController extends Controller
 {
@@ -37,19 +39,17 @@ class FollowController extends Controller
     {
         $author = User::findOrFail($id);
 
-        // Kendini takip etmeyi engelle
         if ($author->id === auth()->id()) {
-            return response()->json([
-                'message' => 'Kendinizi takip edemezsiniz'
-            ], 400);
+            return ResponseHelper::error();
         }
 
-        // Yazarı takip et
-        auth()->user()->followedAuthors()->attach($author->id);
+        Auth::user()->followedAuthors()->attach($author->id);
 
         return response()->json([
             'message' => 'Yazar başarıyla takip edildi'
         ]);
+
+        return ResponseHelper::success();
     }
 
     /**
@@ -80,8 +80,7 @@ class FollowController extends Controller
     {
         $author = User::findOrFail($id);
 
-        // Takibi kaldır
-        auth()->user()->followedAuthors()->detach($author->id);
+        Auth::user()->followedAuthors()->detach($author->id);
 
         return response()->json([
             'message' => 'Yazar takibi başarıyla kaldırıldı'
@@ -177,4 +176,4 @@ class FollowController extends Controller
             'following' => $following
         ]);
     }
-} 
+}

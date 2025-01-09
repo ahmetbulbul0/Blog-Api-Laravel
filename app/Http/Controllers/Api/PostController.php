@@ -27,8 +27,7 @@ class PostController extends Controller
     public function __construct(
         PostServiceInterface $postService,
         CommentServiceInterface $commentService,
-        )
-    {
+    ) {
         $this->postService = $postService;
         $this->commentService = $commentService;
     }
@@ -418,7 +417,7 @@ class PostController extends Controller
         }
     }
 
-        /**
+    /**
      * @OA\Get(
      *     path="/api/posts/{id}/comments",
      *     summary="Gönderiye ait yorumları listele",

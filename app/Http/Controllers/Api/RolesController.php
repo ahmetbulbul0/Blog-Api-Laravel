@@ -17,7 +17,7 @@ use App\Http\Resources\RoleResource;
  *     description="Kullanıcı rolleri yönetimi için API endpoint'leri"
  * )
  */
-class RoleController extends Controller
+class RolesController extends Controller
 {
     protected $roleService;
 
@@ -210,10 +210,7 @@ class RoleController extends Controller
     public function destroy(int $id): JsonResponse
     {
         $this->roleService->deleteRole($id);
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Role deleted successfully'
-        ]);
+        return ResponseHelper::success();
     }
 
     /**

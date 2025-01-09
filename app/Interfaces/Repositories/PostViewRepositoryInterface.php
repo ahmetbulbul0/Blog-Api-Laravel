@@ -13,4 +13,5 @@ interface PostViewRepositoryInterface
     public function getViewsCount($postId);
     public function getViewsByDateRange($postId, $startDate, $endDate);
     public function getMostViewedPosts($limit = 10);
+    public function getPostViews($postId);
 }

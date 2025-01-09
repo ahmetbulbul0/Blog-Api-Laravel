@@ -16,7 +16,7 @@ use Illuminate\Http\JsonResponse;
  *     description="Blog kategorileri yönetimi için API endpoint'leri"
  * )
  */
-class CategoryController extends Controller
+class CategoriesController extends Controller
 {
     protected $categoryService;
 

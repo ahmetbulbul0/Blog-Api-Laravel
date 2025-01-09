@@ -72,4 +72,11 @@ class PostViewRepository implements PostViewRepositoryInterface
             ->limit($limit)
             ->get();
     }
+
+    public function getPostViews($postId)
+    {
+        return $this->model->where('post_id', $postId)
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
 }
