@@ -13,14 +13,6 @@ use App\Http\Controllers\Api\PostViewsController;
 use App\Http\Controllers\Api\CategoriesController;
 use App\Http\Controllers\Api\UserFollowsController;
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::prefix('authors')->group(function () {
-        Route::post('/{id}/follow', [FollowController::class, 'follow'])->middleware('role:reader');
-        Route::delete('/{id}/unfollow', [FollowController::class, 'unfollow'])->middleware('role:reader');
-        Route::get('/{id}/followers', [FollowController::class, 'followers'])->middleware('role:author');
-    });
-});
-
 Route::prefix('users')->controller(UserController::class)->group(function () {
     Route::get("/", "index");
     Route::post("/", "store");
@@ -120,7 +112,7 @@ Route::prefix('tags')->controller(TagsController::class)->group(function () {
 
 Route::prefix('user-follows')->controller(UserFollowsController::class)->group(function () {
     Route::post("follow/{userId}", "follow");
-    Route::post("unfollow/{userId}", "unfollow");
-    Route::get("{id}", "followers");
+    Route::delete("unfollow/{userId}", "unfollow");
+    Route::get("{id}/followers", "followers");
     Route::get("{id}", "followings");
 });
