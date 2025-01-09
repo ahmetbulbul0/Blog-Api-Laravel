@@ -11,18 +11,13 @@ use App\Http\Controllers\Api\FollowController;
 use App\Http\Controllers\Api\CommentsController;
 use App\Http\Controllers\Api\PostViewsController;
 use App\Http\Controllers\Api\CategoriesController;
+use App\Http\Controllers\Api\UserFollowsController;
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('authors')->group(function () {
         Route::post('/{id}/follow', [FollowController::class, 'follow'])->middleware('role:reader');
         Route::delete('/{id}/unfollow', [FollowController::class, 'unfollow'])->middleware('role:reader');
         Route::get('/{id}/followers', [FollowController::class, 'followers'])->middleware('role:author');
-    });
-
-    Route::prefix('admin')->middleware('role:admin')->group(function () {
-        Route::get('/users', [AdminController::class, 'users']);
-        Route::delete('/users/{id}', [AdminController::class, 'deleteUser']);
-        Route::put('/settings', [AdminController::class, 'updateSettings']);
     });
 });
 
@@ -121,4 +116,11 @@ Route::prefix('tags')->controller(TagsController::class)->group(function () {
     Route::delete("{id}", "destroy");
     Route::get("popular", "popularTags");
     Route::get("{id}/posts", "tagPosts");
+});
+
+Route::prefix('user-follows')->controller(UserFollowsController::class)->group(function () {
+    Route::post("follow/{userId}", "follow");
+    Route::post("unfollow/{userId}", "unfollow");
+    Route::get("{id}", "followers");
+    Route::get("{id}", "followings");
 });

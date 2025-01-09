@@ -2,14 +2,26 @@
 
 namespace App\Http\Controllers\Api;
 
+
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Interfaces\Services\UserFollowServiceInterface;
+use App\Interfaces\Services\UserServiceInterface;
 
-class FollowController extends Controller
+class UserFollowsController extends Controller
 {
+    protected $userFollowService;
+    protected $userServiceInterface;
+
+    public function __construct(
+        UserFollowServiceInterface $userFollowService,
+        UserServiceInterface $userServiceInterface
+    ) {
+        $this->userFollowService = $userFollowService;
+        $this->userServiceInterface = $userServiceInterface;
+    }
+
     /**
      * @OA\Post(
      *     path="/authors/{id}/follow",
@@ -37,17 +49,21 @@ class FollowController extends Controller
      */
     public function follow($id)
     {
-        $author = User::findOrFail($id);
+        $author = $this->userServiceInterface->getUserById($id);
 
-        if ($author->id === auth()->id()) {
+        if (!$author) {
+            return ResponseHelper::notFound("Author not found");
+        }
+
+        if ($id === Auth::id()) {
             return ResponseHelper::error();
         }
 
-        Auth::user()->followedAuthors()->attach($author->id);
-
-        return response()->json([
-            'message' => 'Yazar başarıyla takip edildi'
-        ]);
+        try {
+            $this->userFollowService->follow($id);
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
 
         return ResponseHelper::success();
     }
@@ -78,13 +94,23 @@ class FollowController extends Controller
      */
     public function unfollow($id)
     {
-        $author = User::findOrFail($id);
+        $author = $this->userServiceInterface->getUserById($id);
 
-        Auth::user()->followedAuthors()->detach($author->id);
+        if (!$author) {
+            return ResponseHelper::notFound("Author not found");
+        }
 
-        return response()->json([
-            'message' => 'Yazar takibi başarıyla kaldırıldı'
-        ]);
+        if ($id === Auth::id()) {
+            return ResponseHelper::forbidden();
+        }
+
+        try {
+            $this->userFollowService->follow($id);
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
+
+        return ResponseHelper::success();
     }
 
     /**
@@ -122,21 +148,23 @@ class FollowController extends Controller
      */
     public function followers($id)
     {
-        $author = User::findOrFail($id);
+        $author = $this->userServiceInterface->getUserById($id);
 
-        // Yetki kontrolü
-        if ($author->id !== auth()->id() && !auth()->user()->isAdmin()) {
-            return response()->json([
-                'message' => 'Bu işlem için yetkiniz bulunmamaktadır'
-            ], 403);
+        if (!$author) {
+            return ResponseHelper::notFound("Author not found");
         }
 
-        $followers = $author->followers()->with('role')->paginate(15);
+        if ($id !== Auth::id() && !auth()->user()->isAdmin()) {
+            return ResponseHelper::forbidden();
+        }
 
-        return response()->json([
-            'message' => 'Takipçiler başarıyla getirildi',
-            'followers' => $followers
-        ]);
+        try {
+            $followers = $this->userFollowService->followers($id);
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
+
+        return ResponseHelper::success($followers);
     }
 
     /**
@@ -163,17 +191,10 @@ class FollowController extends Controller
      *     )
      * )
      */
-    public function following(Request $request)
+    public function followings()
     {
-        $following = auth()->user()->followedAuthors()
-            ->with(['role', 'posts' => function($query) {
-                $query->latest()->take(3);
-            }])
-            ->paginate(15);
+        $followings = $this->userFollowService->followings();
 
-        return response()->json([
-            'message' => 'Takip edilen yazarlar başarıyla getirildi',
-            'following' => $following
-        ]);
+        return ResponseHelper::success($followings);
     }
 }
