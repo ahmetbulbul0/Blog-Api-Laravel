@@ -17,7 +17,7 @@ use App\Http\Resources\CommentResource;
  *     description="Blog yorumları yönetimi için API endpoint'leri"
  * )
  */
-class CommentController extends Controller
+class CommentsController extends Controller
 {
     protected $commentService;
 
@@ -246,74 +246,6 @@ class CommentController extends Controller
     }
 
     /**
-     * @OA\Get(
-     *     path="/api/posts/{postId}/comments",
-     *     summary="Gönderiye ait yorumları listele",
-     *     tags={"Comments"},
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(
-     *         name="postId",
-     *         in="path",
-     *         required=true,
-     *         description="Gönderi ID",
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Başarılı",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Success"),
-     *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
-     *         )
-     *     )
-     * )
-     */
-    public function postComments(int $postId): JsonResponse
-    {
-        try {
-            $comments = $this->commentService->getPostComments($postId);
-            return ResponseHelper::success($comments);
-        } catch (\Exception $e) {
-            return ResponseHelper::serverError($e->getMessage());
-        }
-    }
-
-    /**
-     * @OA\Get(
-     *     path="/api/users/{userId}/comments",
-     *     summary="Kullanıcıya ait yorumları listele",
-     *     tags={"Comments"},
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(
-     *         name="userId",
-     *         in="path",
-     *         required=true,
-     *         description="Kullanıcı ID",
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Başarılı",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="status", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Success"),
-     *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
-     *         )
-     *     )
-     * )
-     */
-    public function userComments(int $userId): JsonResponse
-    {
-        try {
-            $comments = $this->commentService->getUserComments($userId);
-            return ResponseHelper::success($comments);
-        } catch (\Exception $e) {
-            return ResponseHelper::serverError($e->getMessage());
-        }
-    }
-
-    /**
      * @OA\Patch(
      *     path="/api/comments/{id}/approve",
      *     summary="Yorumu onayla",
@@ -340,11 +272,7 @@ class CommentController extends Controller
     public function approve(int $id): JsonResponse
     {
         $comment = $this->commentService->approveComment($id);
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Comment approved successfully',
-            'data' => $comment
-        ]);
+        return ResponseHelper::success($comment);
     }
 
     /**
@@ -374,10 +302,6 @@ class CommentController extends Controller
     public function reject(int $id): JsonResponse
     {
         $comment = $this->commentService->rejectComment($id);
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Comment rejected successfully',
-            'data' => $comment
-        ]);
+        return ResponseHelper::success($comment);
     }
 }

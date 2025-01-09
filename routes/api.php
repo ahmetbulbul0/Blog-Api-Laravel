@@ -1,89 +1,69 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\PostController;
-use App\Http\Controllers\Api\CategoryController;
-use App\Http\Controllers\Api\TagController;
-use App\Http\Controllers\Api\CommentController;
-use App\Http\Controllers\Api\UserController;
-use App\Http\Controllers\Api\RoleController;
-use App\Http\Controllers\Api\PostViewController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\PostController;
+use App\Http\Controllers\Api\CommentsController;
+use App\Http\Controllers\Api\FollowController;
+use App\Http\Controllers\Api\AdminController;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-*/
-
-// Public routes
-Route::prefix('auth')->controller(AuthController::class)->name("auth.")->group(function () {
-    Route::post('register', 'register')->name("register");
-    Route::post('login', 'login')->name("login");
+Route::prefix('auth')->group(function () {
+    Route::post('register/admin', [AuthController::class, 'registerAdmin']);
+    Route::post('register/author', [AuthController::class, 'registerAuthor']);
+    Route::post('register/reader', [AuthController::class, 'registerReader']);
+    Route::post('login', [AuthController::class, 'login']);
+    Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 });
 
-// Protected routes
 Route::middleware('auth:sanctum')->group(function () {
-    // Auth routes
-    Route::prefix('auth')->group(function () {
-        Route::post('logout', [AuthController::class, 'logout']);
-        Route::get('me', [AuthController::class, 'me']);
+    Route::prefix('authors')->group(function () {
+        Route::post('/{id}/follow', [FollowController::class, 'follow'])->middleware('role:reader');
+        Route::delete('/{id}/unfollow', [FollowController::class, 'unfollow'])->middleware('role:reader');
+        Route::get('/{id}/followers', [FollowController::class, 'followers'])->middleware('role:author');
     });
 
-    // Post routes
-    Route::prefix('posts')->group(function () {
-        Route::get('published', [PostController::class, 'published']);
-        Route::get('drafts', [PostController::class, 'drafts']);
-        Route::get('archived', [PostController::class, 'archived']);
-        Route::get('{id}/views', [PostViewController::class, 'postViews']);
-        Route::get('{id}/views/count', [PostViewController::class, 'viewsCount']);
-        Route::get('{id}/views/date-range', [PostViewController::class, 'viewsByDateRange']);
+    Route::prefix('admin')->middleware('role:admin')->group(function () {
+        Route::get('/users', [AdminController::class, 'users']);
+        Route::delete('/users/{id}', [AdminController::class, 'deleteUser']);
+        Route::put('/settings', [AdminController::class, 'updateSettings']);
     });
-    Route::apiResource('posts', PostController::class);
+});
 
-    // Category routes
-    Route::prefix('categories')->group(function () {
-        Route::get('parent', [CategoryController::class, 'parentCategories']);
-        Route::get('{id}/sub', [CategoryController::class, 'subCategories']);
-        Route::get('{id}/posts', [CategoryController::class, 'categoryPosts']);
-    });
-    Route::apiResource('categories', CategoryController::class);
+Route::prefix('users')->controller(UserController::class)->group(function () {
+    Route::get("/", "index");
+    Route::post("/", "store");
+    Route::get("{id}", "show");
+    Route::put("{id}", "update");
+    Route::delete("{id}", "destroy");
+    Route::get("{id}/posts", "userPosts");
+    Route::get("{id}/comments", "userComments");
+    Route::get("{userId}/roles/{roleId}", "assignRole");
+    Route::delete("{userId}/roles/{roleId}", "removeRole");
+});
 
-    // Tag routes
-    Route::prefix('tags')->group(function () {
-        Route::get('popular', [TagController::class, 'popularTags']);
-        Route::get('{id}/posts', [TagController::class, 'tagPosts']);
-    });
-    Route::apiResource('tags', TagController::class);
+Route::prefix('comments')->controller(CommentsController::class)->group(function () {
+    Route::get("/", "index");
+    Route::post("/", "store");
+    Route::get("{id}", "show");
+    Route::put("{id}", "update");
+    Route::delete("{id}", "destroy");
+    Route::get("recent", "recentComments");
+    Route::patch("{id}/approve", "approve");
+    Route::patch("{id}/reject", "reject");
+});
 
-    // Comment routes
-    Route::prefix('comments')->group(function () {
-        Route::get('recent', [CommentController::class, 'recentComments']);
-        Route::patch('{id}/approve', [CommentController::class, 'approve']);
-        Route::patch('{id}/reject', [CommentController::class, 'reject']);
-    });
-    Route::apiResource('comments', CommentController::class);
-
-    // User routes
-    Route::prefix('users')->group(function () {
-        Route::get('{id}/posts', [UserController::class, 'userPosts']);
-        Route::get('{id}/comments', [UserController::class, 'userComments']);
-        Route::get('{id}/views', [PostViewController::class, 'userViews']);
-        Route::post('{userId}/roles/{roleId}', [UserController::class, 'assignRole']);
-        Route::delete('{userId}/roles/{roleId}', [UserController::class, 'removeRole']);
-    });
-    Route::apiResource('users', UserController::class);
-
-    // Role routes
-    Route::prefix('roles')->group(function () {
-        Route::get('{id}/users', [RoleController::class, 'roleUsers']);
-        Route::get('{id}/users/count', [RoleController::class, 'usersCount']);
-    });
-    Route::apiResource('roles', RoleController::class);
-
-    // PostView routes
-    Route::prefix('post-views')->group(function () {
-        Route::get('most-viewed', [PostViewController::class, 'mostViewedPosts']);
-    });
-    Route::apiResource('post-views', PostViewController::class)->except(['update']);
+Route::prefix('posts')->controller(PostController::class)->group(function () {
+    Route::post("/", "index");
+    Route::post("/", "store");
+    Route::get("{id}", "show");
+    Route::put("{id}", "update");
+    Route::delete("{id}", "destroy");
+    Route::get("published", "publishedPosts");
+    Route::get("drafts", "draftPosts");
+    Route::get("archived", "archivedPosts");
+    Route::get("popular", "popularPosts");
+    Route::get("recent", "recentPosts");
+    Route::get("{id}/related", "relatedPosts");
+    Route::get("{id}/comments", "comments");
 });

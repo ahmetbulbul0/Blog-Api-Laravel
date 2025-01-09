@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers\Api;
 
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use App\Helpers\ResponseHelper;
+use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\PostResource;
 use App\Http\Requests\Post\StorePostRequest;
 use App\Http\Requests\Post\UpdatePostRequest;
 use App\Interfaces\Services\PostServiceInterface;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Response;
-use App\Helpers\ResponseHelper;
-use Illuminate\Http\Request;
-use App\Http\Resources\PostResource;
+use App\Interfaces\Services\CommentServiceInterface;
 
 /**
  * @OA\Tag(
@@ -21,10 +22,15 @@ use App\Http\Resources\PostResource;
 class PostController extends Controller
 {
     protected $postService;
+    protected $commentService;
 
-    public function __construct(PostServiceInterface $postService)
+    public function __construct(
+        PostServiceInterface $postService,
+        CommentServiceInterface $commentService,
+        )
     {
         $this->postService = $postService;
+        $this->commentService = $commentService;
     }
 
     /**
@@ -407,6 +413,40 @@ class PostController extends Controller
             $limit = $request->get('limit', 5);
             $posts = $this->postService->getRelatedPosts($id, $limit);
             return ResponseHelper::success(PostResource::collection($posts));
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
+        }
+    }
+
+        /**
+     * @OA\Get(
+     *     path="/api/posts/{id}/comments",
+     *     summary="Gönderiye ait yorumları listele",
+     *     tags={"Comments"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Gönderi ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Başarılı",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Success"),
+     *             @OA\Property(property="data", type="array", @OA\Items(type="object"))
+     *         )
+     *     )
+     * )
+     */
+    public function postComments(int $id): JsonResponse
+    {
+        try {
+            $comments = $this->commentService->getPostComments($id);
+            return ResponseHelper::success($comments);
         } catch (\Exception $e) {
             return ResponseHelper::serverError($e->getMessage());
         }
