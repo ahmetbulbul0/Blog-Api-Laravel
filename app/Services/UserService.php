@@ -17,8 +17,7 @@ class UserService implements UserServiceInterface
     public function __construct(
         UserRepositoryInterface $userRepository,
         RoleRepositoryInterface $roleRepository
-        )
-    {
+    ) {
         $this->userRepository = $userRepository;
         $this->roleRepository = $roleRepository;
     }
@@ -33,9 +32,13 @@ class UserService implements UserServiceInterface
         return $this->userRepository->findById($id);
     }
 
-    public function createUser(array $data, string $roleName)
+    public function createUser(array $data, string $roleName = null)
     {
-        $role = $this->roleRepository->findByName($roleName);
+        if ($roleName) {
+            $role = $this->roleRepository->findByName($roleName);
+        } else {
+            $role = $this->roleRepository->findById($data["roleId"]);
+        }
 
         $data = [
             "role_id" => $role->id,
@@ -69,7 +72,8 @@ class UserService implements UserServiceInterface
         return $this->updateUser($userId, $data);
     }
 
-    public function attachInterests($userId, $interests) {
+    public function attachInterests($userId, $interests)
+    {
         $this->userRepository->attachInterests($userId, $interests);
     }
 

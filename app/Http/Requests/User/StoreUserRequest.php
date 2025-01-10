@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\User;
 
+use Illuminate\Validation\Rules\Password;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreUserRequest extends FormRequest
@@ -14,17 +15,28 @@ class StoreUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
+            "roleId" => ["required", "integer", "exists:roles,id"],
+            "firstName" => ['required', 'string', 'max:255'],
+            "lastName" => ['required', 'string', 'max:255'],
+            "username" => ['required', 'string', 'max:255', "unique:users,username"],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'roleId' => ['required', 'exists:roles,id']
+            'password' => ['required', 'confirmed', Password::defaults()],
+            'profilePicture' => ['nullable', 'image', 'max:2048'],
+            'occupation' => ['required', 'string', 'max:255'],
+            'dateOfBirth' => ['required', 'date', 'before:today'],
+            'location' => ['required', 'string', 'max:255'],
+            'preferredLanguage' => ['required', 'string', 'in:tr,en'],
+            'gender' => ['required', 'string', 'in:male,female,other,prefer_not_to_say'],
+            'bio' => ['nullable', 'string', 'max:1000'],
+            'interests' => ['nullable', 'array'],
+            'interests.*' => ['exists:tags,id']
         ];
     }
 
     protected function prepareForValidation()
     {
         $this->merge([
-            'role_id' => $this->roleId
+            'password_confirmation' => $this->passwordConfirmation,
         ]);
     }
 }

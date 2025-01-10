@@ -19,7 +19,7 @@ Route::prefix('auth')->controller(AuthController::class)->group(function () {
     });
 
     Route::post('login', 'login');
-    Route::post('logout', 'logout')->middleware('auth:sanctum');
+    Route::post('logout', 'logout');
 });
 
 Route::prefix('users')->controller(UserController::class)->group(function () {
@@ -28,11 +28,12 @@ Route::prefix('users')->controller(UserController::class)->group(function () {
     Route::get("{id}", "show");
     Route::put("{id}", "update");
     Route::delete("{id}", "destroy");
-            Route::get("{id}/posts", "userPosts");
-            Route::get("{id}/comments", "userComments");
-    Route::get("{userId}/roles/{roleId}", "assignRole");
-    Route::delete("{userId}/roles/{roleId}", "removeRole");
 });
+
+/*
+    Route::get("{id}/posts", "userPosts");
+    Route::get("{id}/comments", "userComments");
+*/
 
 Route::prefix('posts')->controller(PostController::class)->group(function () {
     Route::post("/", "index");
@@ -96,7 +97,7 @@ Route::prefix('roles')->controller(RolesController::class)->group(function () {
     Route::delete("{id}", "destroy");
     Route::get("{id}/users", "roleUsers");
     Route::get("{id}/users-count", "roleUsers");
-})->middleware(["auth", "role:admin"]);
+});
 
 Route::prefix('tags')->controller(TagsController::class)->group(function () {
     Route::get("/", "index");
@@ -113,4 +114,4 @@ Route::prefix('user-follows')->controller(UserFollowsController::class)->group(f
     Route::delete("unfollow/{userId}", "unfollow");
     Route::get("{id}/followers", "followers");
     Route::get("{id}", "followings");
-})->middleware(["auth"]);
+});

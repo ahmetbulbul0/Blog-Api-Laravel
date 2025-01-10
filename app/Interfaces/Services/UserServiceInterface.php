@@ -6,7 +6,7 @@ interface UserServiceInterface
 {
     public function getAllUsers();
     public function getUserById($id);
-    public function createUser(array $data, string $roleName);
+    public function createUser(array $data, string $roleName = null);
     public function updateUser($id, array $data);
     public function updateUserProfilePicture($userId, $profilePictureFile);
     public function attachInterests($userId, $interests);
