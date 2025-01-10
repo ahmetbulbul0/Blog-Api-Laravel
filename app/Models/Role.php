@@ -31,6 +31,10 @@ class Role extends Model
         self::READER => 'Yazarları takip edebilir ve blog yazılarına yorum yapabilir.'
     ];
 
+    const ADMIN_ID = 1;
+    const AUTHOR_ID = 2;
+    const READER_ID = 3;
+
     // Rol kontrol metodları
     public function isAdmin()
     {

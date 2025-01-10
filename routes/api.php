@@ -5,7 +5,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\TagsController;
 use App\Http\Controllers\Api\UserController;
- use App\Http\Controllers\Api\RolesController;
+use App\Http\Controllers\Api\RolesController;
 use App\Http\Controllers\Api\CommentsController;
 use App\Http\Controllers\Api\PostViewsController;
 use App\Http\Controllers\Api\CategoriesController;
