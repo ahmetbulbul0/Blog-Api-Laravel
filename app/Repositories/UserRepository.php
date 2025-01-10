@@ -31,9 +31,11 @@ class UserRepository implements UserRepositoryInterface
 
     public function update($id, array $data)
     {
-        $user = $this->findById($id);
-        $user->update($data);
-        return $user;
+        return $this->findById($id)->update($data);
+    }
+
+    public function attachInterests($id, $interests) {
+        return $this->findById($id)->interests()->attach($interests);
     }
 
     public function delete($id)
@@ -57,27 +59,8 @@ class UserRepository implements UserRepositoryInterface
         return $this->model->findOrFail($userId)->comments;
     }
 
-    public function assignRole($userId, $roleId)
-    {
-        $user = $this->findById($userId);
-        $user->role_id = $roleId;
-        $user->save();
-        return $user;
-    }
-
-    public function removeRole($userId, $roleId)
-    {
-        $user = $this->findById($userId);
-        if ($user->role_id == $roleId) {
-            $user->role_id = null;
-            $user->save();
-        }
-        return $user;
-    }
-
     public function hasRole($userId, $roleName)
     {
-        $user = $this->findById($userId);
-        return $user->role && $user->role->name === $roleName;
+        return $this->findById($userId)->role->name === $roleName;
     }
 }

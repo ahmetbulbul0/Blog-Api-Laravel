@@ -16,18 +16,27 @@ class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
+            "firstName" => ['required', 'string', 'max:255'],
+            "lastName" => ['required', 'string', 'max:255'],
+            "username" => ['required', 'string', 'max:255', "unique:users,username"],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'confirmed', Password::defaults()],
-            'profile_picture' => ['nullable', 'image', 'max:2048'],
+            'profilePicture' => ['nullable', 'image', 'max:2048'],
             'occupation' => ['required', 'string', 'max:255'],
-            'date_of_birth' => ['required', 'date', 'before:today'],
+            'dateOfBirth' => ['required', 'date', 'before:today'],
             'location' => ['required', 'string', 'max:255'],
-            'preferred_language' => ['required', 'string', 'in:tr,en'],
+            'preferredLanguage' => ['required', 'string', 'in:tr,en'],
             'gender' => ['required', 'string', 'in:male,female,other,prefer_not_to_say'],
             'bio' => ['nullable', 'string', 'max:1000'],
-            'interests' => ['required', 'array', 'min:1'],
+            'interests' => ['nullable', 'array'],
             'interests.*' => ['exists:tags,id']
         ];
+    }
+
+    protected function prepareForValidation()
+    {
+        $this->merge([
+            'password_confirmation' => $this->passwordConfirmation,
+        ]);
     }
 }

@@ -212,10 +212,7 @@ class UserController extends Controller
     public function destroy(int $id): JsonResponse
     {
         $this->userService->deleteUser($id);
-        return response()->json([
-            'status' => 'success',
-            'message' => 'User deleted successfully'
-        ]);
+        return ResponseHelper::success();
     }
 
     /**

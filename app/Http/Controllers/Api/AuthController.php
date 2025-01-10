@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Interfaces\Services\UserServiceInterface;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -24,28 +25,27 @@ class AuthController extends Controller
 
     protected function createUser(RegisterRequest $request, string $roleName): JsonResponse
     {
-        $role = Role::where('name', $roleName)->firstOrFail();
-
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role_id' => $role->id,
-            'occupation' => $request->occupation,
-            'date_of_birth' => $request->date_of_birth,
-            'location' => $request->location,
-            'preferred_language' => $request->preferred_language,
-            'gender' => $request->gender,
-            'bio' => $request->bio
-        ]);
-
-        if ($request->hasFile('profile_picture')) {
-            $path = $request->file('profile_picture')->store('profile-pictures', 'public');
-            $user->profile_picture = $path;
-            $user->save();
+        try {
+            $user = $this->userService->createUser($request->validated(), $roleName);
+        } catch (\Exception $e) {
+            return ResponseHelper::serverError($e->getMessage());
         }
 
-        $user->interests()->attach($request->interests);
+        if ($request->hasFile('profilePicture')) {
+            try {
+                $this->userService->updateUserProfilePicture($user->id, $request->file('profilePicture'));
+            } catch (\Exception $e) {
+                return ResponseHelper::serverError($e->getMessage());
+            }
+        }
+
+        if ($request->interests) {
+            try {
+                $this->userService->attachInterests($user->id, $request->interests);
+            } catch (\Exception $e) {
+                return ResponseHelper::serverError($e->getMessage());
+            }
+        }
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
