@@ -4,9 +4,12 @@ namespace App\Policies;
 
 use App\Models\Comment;
 use App\Models\User;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class CommentPolicy
 {
+    use HandlesAuthorization;
+
     public function viewAny(?User $user): bool
     {
         return true;
@@ -18,29 +21,55 @@ class CommentPolicy
             return true;
         }
 
-        if (!$user) {
-            return false;
+        if ($user) {
+            return $user->isAdmin() || $comment->user_id === $user->id;
         }
 
-        return $user->isAdmin() || $comment->user_id === $user->id;
+        return false;
     }
 
     public function create(?User $user): bool
     {
-        return true; // Herkes yorum yapabilir (misafir yorumları dahil)
+        return true;
     }
 
     public function update(User $user, Comment $comment): bool
     {
-        return $user->isAdmin() || $comment->user_id === $user->id;
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+
+        if ($comment->user_id === $user->id) {
+
+            return $comment->created_at->diffInMinutes(now()) <= 30;
+        }
+
+        return false;
     }
 
     public function delete(User $user, Comment $comment): bool
     {
-        return $user->isAdmin() || $comment->user_id === $user->id;
+
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+
+        return $comment->user_id === $user->id;
     }
 
-    public function moderate(User $user): bool
+    public function approve(User $user, Comment $comment): bool
+    {
+        return $user->isAdmin();
+    }
+
+    public function markAsSpam(User $user, Comment $comment): bool
+    {
+        return $user->isAdmin();
+    }
+
+    public function viewDeleted(User $user): bool
     {
         return $user->isAdmin();
     }
