@@ -1,180 +1,157 @@
-# Blog Yönetim Sistemi
+# Blog-Api-Laravel
 
-Bu proje, Laravel framework'ü kullanılarak geliştirilmiş kapsamlı bir blog yönetim sistemidir. Modern blog yönetimi için gerekli tüm temel özellikleri içerir ve kolayca genişletilebilir bir yapıya sahiptir.
+This project is a robust and feature-rich RESTful API developed using the Laravel framework, designed to serve as the backend for a modern blog management system. It provides all the essential endpoints required for managing a blog while maintaining a flexible and scalable architecture for future enhancements.
 
-## 🚀 Kurulum Talimatları
+Key Features:
+- Post Management:
+    - Full CRUD (Create, Read, Update, Delete) functionality for blog posts.
+    - Support for managing titles, content, featured images, and publishing status.
+- Category and Tag Management:
+    - Endpoints for creating, updating, and organizing categories and tags to structure blog content effectively.
+- User Roles and Permissions:
+    - Role-based access control for Admins, Editors, and Authors.
+    - Secure authentication and authorization using Laravel's built-in features.
+- Comments Management:
+    - API endpoints to manage comments, including moderation, approval, and deletion.
+- SEO Support (coming soon):
+    - Features for managing meta tags, descriptions, and URLs for SEO optimization.
+- JSON Responses:
+    - Consistent and structured JSON responses for seamless integration with frontend frameworks or third-party applications.
 
-### Sistem Gereksinimleri
-- PHP >= 8.1
-- Composer
-- MySQL veya PostgreSQL
-- Node.js & NPM
+Built with Laravel:
+- RESTful Architecture:
+    - Follows RESTful principles for clean and predictable endpoints.
+- Scalable and Secure:
+    - Leverages Laravel’s robust security features, including CSRF protection, validation, and middleware.
+- Expandable Design:
+    - Easily extensible to integrate additional features such as analytics, third-party APIs, or advanced search.
+  
+This API project is perfect for developers building a frontend application or mobile app for a blog platform. It provides a strong foundation for modern blog systems, whether it’s a personal blog, multi-author platform, or corporate news website.
 
-### Adım Adım Kurulum
-1. Projeyi klonlayın:
-   ```bash
-   git clone [proje-url]
-   cd blog-management-system
-   ```
+## Technologies (languages & frameworks)
 
-2. Composer bağımlılıklarını yükleyin:
-   ```bash
-   composer install
-   ```
+- Php
+- Laravel
+- MySql
 
-3. NPM paketlerini yükleyin:
-   ```bash
-   npm install
-   ```
+## Packages & Libraries
 
-4. Örnek env dosyasını kopyalayın:
-   ```bash
-   cp .env.example .env
-   ```
+- Sanctum
+- L5-Swagger
 
-5. Uygulama anahtarını oluşturun:
-   ```bash
-   php artisan key:generate
-   ```
+## Setup
 
-6. Veritabanı ayarlarını yapın:
-   - `.env` dosyasında veritabanı bilgilerinizi düzenleyin
-   ```
-   DB_CONNECTION=mysql
-   DB_HOST=127.0.0.1
-   DB_PORT=3306
-   DB_DATABASE=blog_db
-   DB_USERNAME=root
-   DB_PASSWORD=
-   ```
-
-7. Veritabanı tablolarını oluşturun:
-   ```bash
-   php artisan migrate
-   ```
-
-8. (Opsiyonel) Örnek verileri yükleyin:
-   ```bash
-   php artisan db:seed
-   ```
-
-9. Uygulamayı başlatın:
-   ```bash
-   php artisan serve
-   ```
-
-## 📦 Mevcut Modüller
-
-### 1. Kullanıcı Yönetimi
-- Kullanıcı kaydı ve girişi
-- Rol tabanlı yetkilendirme sistemi
-- Kullanıcı profil yönetimi
-
-### 2. Blog Yönetimi
-- Post oluşturma, düzenleme ve silme
-- Kategori yönetimi
-- Etiket sistemi
-- Görüntülenme sayısı takibi
-
-### 3. Yorum Sistemi
-- Post yorumları
-- Yorum moderasyonu
-- Yanıt verme özelliği
-
-### 4. İçerik Organizasyonu
-- Kategorilere göre sınıflandırma
-- Etiketleme sistemi
-- Arama ve filtreleme özellikleri
-
-## 🔌 API Dokümantasyonu
-
-### Kimlik Doğrulama
+1. Install Php Packages
+```sh
+composer install
 ```
-POST /api/auth/login
-POST /api/auth/register
-POST /api/auth/logout
+2. Create .env File
+```sh
+1. duplicate the ".env.example" in main folder
+2. rename the file you copied to ".env"
+3. configure the ".env" file you renamed
+```
+3. Create App Key
+```sh
+php artisan key:generate
+```
+4. Run Migrations
+```sh
+php artisan migrate
+```
+5. Run Seeders (For Test Datas)
+```sh
+php artisan db:seed
+```
+6. Run Laravel Project
+```sh
+php artisan serve
 ```
 
-### Blog Post Endpoint'leri
-```
-GET    /api/posts           - Tüm postları listele
-POST   /api/posts           - Yeni post oluştur
-GET    /api/posts/{id}      - Post detaylarını getir
-PUT    /api/posts/{id}      - Post güncelle
-DELETE /api/posts/{id}      - Post sil
-```
+## Admin User Credentials
 
-### Kategori Endpoint'leri
-```
-GET    /api/categories
-POST   /api/categories
-GET    /api/categories/{id}
-PUT    /api/categories/{id}
-DELETE /api/categories/{id}
-```
+-   Email: blogadmin@blogadmin.com
+-   Password: password
 
-### Yorum Endpoint'leri
-```
-GET    /api/posts/{id}/comments
-POST   /api/comments
-PUT    /api/comments/{id}
-DELETE /api/comments/{id}
-```
+## Author User Credentials
 
-## 🎨 Frontend Geliştirme Kılavuzu
+-   Email: blogauthor@blogauthor.com
+-   Password: password
 
-### Önerilen Teknolojiler
-- Vue.js veya React
-- Tailwind CSS (projede mevcut)
-- Axios HTTP client
+## Reader User Credentials
 
-### API Entegrasyonu
-1. API base URL'ini yapılandırın
-2. Interceptor'lar ile token yönetimini yapın
-3. Error handling mekanizması kurun
+-   Email: blogreader@blogreader.com
+-   Password: password
 
-### Best Practices
-- Component bazlı geliştirme yapın
-- State management kullanın (Vuex/Redux)
-- Form validasyonlarını frontend'de de uygulayın
-- Responsive tasarım prensiplerini takip edin
+## Endpoints
 
-## 🔮 Gelecek Güncellemeler
-
-### Planlanan Özellikler
-1. **Medya Yönetimi**
-   - Gelişmiş dosya yükleme sistemi
-   - Resim optimizasyonu
-   - Medya kütüphanesi
-
-2. **SEO Optimizasyonu**
-   - Meta tag yönetimi
-   - Sitemap oluşturma
-   - URL yapılandırması
-
-3. **İstatistik ve Analiz**
-   - Detaylı ziyaretçi analizi
-   - Post performans metrikleri
-   - Kullanıcı davranış analizi
-
-4. **Çoklu Dil Desteği**
-   - Dinamik dil yönetimi
-   - İçerik çevirisi
-   - Dil bazlı URL yapısı
-
-5. **Gelişmiş Yetkilendirme**
-   - Detaylı rol ve izin sistemi
-   - Kullanıcı grupları
-   - Özel izin tanımlamaları
-
-## 📝 Lisans
-
-Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için [LICENSE](LICENSE) dosyasını inceleyebilirsiniz.
-
-## 🤝 Katkıda Bulunma
-
-1. Fork'layın
-2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)
-3. Commit'leyin (`git commit -m 'feat: Add amazing feature'`)
-4. Branch'i push edin (`git push origin feature/amazing-feature`)
-5. Pull Request oluşturun
+- Auth
+  - Login
+  - Register
+    - Admin
+    - Auth
+    - Reader
+  - Logout
+- Users
+  - List
+  - Create
+  - Show
+  - Update
+  - Delete
+- Posts
+  - List
+  - Create
+  - Show
+  - Update
+  - Delete
+  - Publisheds
+  - Drafts
+  - Archived
+  - Populars
+  - Recents
+  - Relateds
+  - Comments
+- Comments
+  - List
+  - Create
+  - Show
+  - Update
+  - Delete
+  - Recent
+  - Approve
+  - Reject
+- Categories
+  - List
+  - Create
+  - Show
+  - Update
+  - Delete
+  - Parent
+  - Subs
+  - Posts
+- Post Views
+  - List
+  - Create
+  - Show
+  - Most Vieweds
+- Roles
+  - List
+  - Create
+  - Show
+  - Update
+  - Delete
+  - Role Users
+  - Role Users Count
+- Tags
+  - List
+  - Create
+  - Show
+  - Update
+  - Delete
+  - Popular
+  - Tag Posts
+- User Follows
+  - Follow
+  - UnFollow
+  - Followers
+  - Followings
