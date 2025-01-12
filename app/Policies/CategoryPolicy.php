@@ -10,12 +10,12 @@ class CategoryPolicy
 {
     use HandlesAuthorization;
 
-    public function viewAny(User $user): bool
+    public function viewAny(?User $user): bool
     {
         return true;
     }
 
-    public function view(User $user, Category $category): bool
+    public function view(?User $user, Category $category): bool
     {
         return true;
     }
@@ -27,6 +27,7 @@ class CategoryPolicy
 
     public function update(User $user, Category $category): bool
     {
+        dd($user);
         return $user->isAdmin();
     }
 

@@ -62,10 +62,10 @@ Route::prefix('comments')->controller(CommentsController::class)->group(function
 });
 
 Route::prefix('categories')->controller(CategoriesController::class)->group(function () {
-    Route::post("/", "index");
-    Route::post("/", "store");
+    Route::get("/", "index");
+    Route::post("/", "store")->middleware(["auth:sanctum", "role:admin"]);
     Route::get("{id}", "show");
-    Route::put("{id}", "update");
+    Route::post("{category}/update", "update");
     Route::delete("{id}", "destroy");
     Route::get("parent", "parentCategories");
     Route::get("{id}/sub", "subCategories");

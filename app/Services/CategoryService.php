@@ -2,8 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\Category;
+use Illuminate\Support\Facades\Gate;
 use App\Interfaces\Services\CategoryServiceInterface;
 use App\Interfaces\Repositories\CategoryRepositoryInterface;
+use Illuminate\Support\Facades\Auth;
 
 class CategoryService implements CategoryServiceInterface
 {
@@ -14,23 +17,35 @@ class CategoryService implements CategoryServiceInterface
         $this->categoryRepository = $categoryRepository;
     }
 
-    public function getAllCategories()
+    public function getAll()
     {
+        Gate::authorize('viewAny', Category::class);
+
         return $this->categoryRepository->getAll();
     }
 
-    public function getCategoryById($id)
+    public function findById($id)
     {
-        return $this->categoryRepository->findById($id);
+        $category = $this->categoryRepository->findById($id);
+
+        if ($category) {
+            Gate::authorize('view', $category);
+        }
+
+        return $category;
     }
 
     public function createCategory(array $data)
     {
+        Gate::authorize('create', [Category::class, Auth::user()]);
+
         return $this->categoryRepository->create($data);
     }
 
     public function updateCategory($id, array $data)
     {
+        Gate::authorize('update', Category::class);
+
         return $this->categoryRepository->update($id, $data);
     }
 

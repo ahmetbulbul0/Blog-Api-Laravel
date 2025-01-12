@@ -45,7 +45,8 @@ class CategoriesController extends Controller
     public function index(): JsonResponse
     {
         try {
-            $categories = $this->categoryService->getAllCategories();
+            $categories = $this->categoryService->getAll();
+
             return ResponseHelper::success(CategoryResource::collection($categories));
         } catch (\Exception $e) {
             return ResponseHelper::serverError($e->getMessage());
@@ -83,6 +84,7 @@ class CategoriesController extends Controller
     {
         try {
             $category = $this->categoryService->createCategory($request->validated());
+
             return ResponseHelper::created(new CategoryResource($category), 'Category created successfully');
         } catch (\Exception $e) {
             return ResponseHelper::serverError($e->getMessage());
@@ -116,10 +118,12 @@ class CategoriesController extends Controller
     public function show(int $id): JsonResponse
     {
         try {
-            $category = $this->categoryService->getCategoryById($id);
+            $category = $this->categoryService->findById($id);
+
             if (!$category) {
                 return ResponseHelper::notFound('Category not found');
             }
+
             return ResponseHelper::success(new CategoryResource($category));
         } catch (\Exception $e) {
             return ResponseHelper::serverError($e->getMessage());
@@ -164,9 +168,11 @@ class CategoriesController extends Controller
     {
         try {
             $category = $this->categoryService->updateCategory($id, $request->validated());
+
             if (!$category) {
                 return ResponseHelper::notFound('Category not found');
             }
+            
             return ResponseHelper::success(new CategoryResource($category), 'Category updated successfully');
         } catch (\Exception $e) {
             return ResponseHelper::serverError($e->getMessage());
