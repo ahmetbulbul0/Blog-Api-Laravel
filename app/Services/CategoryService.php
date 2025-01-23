@@ -37,7 +37,7 @@ class CategoryService implements CategoryServiceInterface
 
     public function createCategory(array $data)
     {
-        Gate::authorize('create', [Category::class, Auth::user()]);
+        Gate::authorize('create', Category::class);
 
         return $this->categoryRepository->create($data);
     }
@@ -51,6 +51,12 @@ class CategoryService implements CategoryServiceInterface
 
     public function deleteCategory($id)
     {
+        $category = $this->categoryRepository->findById($id);
+
+        if ($category) {
+            Gate::authorize('delete', $category);
+        }
+
         return $this->categoryRepository->delete($id);
     }
 

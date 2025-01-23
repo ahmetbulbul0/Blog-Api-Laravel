@@ -16,7 +16,7 @@ use Illuminate\Http\JsonResponse;
  *     description="Blog kategorileri yönetimi için API endpoint'leri"
  * )
  */
-class CategoriesController extends Controller
+class CategoryController extends Controller
 {
     protected $categoryService;
 
@@ -164,15 +164,15 @@ class CategoriesController extends Controller
      *     )
      * )
      */
-    public function update(UpdateCategoryRequest $request, int $id): JsonResponse
+    public function update(UpdateCategoryRequest $request, int $categoryId): JsonResponse
     {
         try {
-            $category = $this->categoryService->updateCategory($id, $request->validated());
+            $category = $this->categoryService->updateCategory($categoryId, $request->validated());
 
             if (!$category) {
                 return ResponseHelper::notFound('Category not found');
             }
-            
+
             return ResponseHelper::success(new CategoryResource($category), 'Category updated successfully');
         } catch (\Exception $e) {
             return ResponseHelper::serverError($e->getMessage());
@@ -202,13 +202,15 @@ class CategoriesController extends Controller
      *     )
      * )
      */
-    public function destroy(int $id): JsonResponse
+    public function destroy(int $categoryId): JsonResponse
     {
         try {
-            $result = $this->categoryService->deleteCategory($id);
+            $result = $this->categoryService->deleteCategory($categoryId);
+
             if (!$result) {
                 return ResponseHelper::notFound('Category not found');
             }
+
             return ResponseHelper::success(null, 'Category deleted successfully');
         } catch (\Exception $e) {
             return ResponseHelper::serverError($e->getMessage());

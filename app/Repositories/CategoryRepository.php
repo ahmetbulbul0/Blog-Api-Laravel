@@ -39,6 +39,11 @@ class CategoryRepository implements CategoryRepositoryInterface
     public function delete($id)
     {
         $category = $this->findById($id);
+
+        if (!$category) {
+            return false;
+        }
+
         return $category->delete();
     }
 

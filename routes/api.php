@@ -8,7 +8,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\RolesController;
 use App\Http\Controllers\Api\CommentsController;
 use App\Http\Controllers\Api\PostViewsController;
-use App\Http\Controllers\Api\CategoriesController;
+use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\UserFollowsController;
 
 Route::prefix('auth')->controller(AuthController::class)->group(function () {
@@ -21,6 +21,27 @@ Route::prefix('auth')->controller(AuthController::class)->group(function () {
     Route::post('login', 'login');
     Route::post('logout', 'logout')->middleware(["auth:sanctum"]);
 });
+
+Route::prefix('categories')->controller(CategoryController::class)->group(function () {
+    Route::get("/", "index");
+    Route::post("/", "store")->middleware(["auth:sanctum", "role:admin"]);
+    Route::get("{id}", "show");
+    Route::post("{category}/update", "update")->middleware(["auth:sanctum", "role:admin"]);
+    Route::delete("{id}", "destroy")->middleware(["auth:sanctum", "role:admin"]);
+    Route::get("parent", "parentCategories");
+    Route::get("{id}/sub", "subCategories");
+    Route::get("{id}/posts", "categoryPosts");
+});
+
+
+
+
+
+
+
+
+
+
 
 Route::prefix('users')->controller(UserController::class)->middleware(["auth:sanctum", "role:admin"])->group(function () {
     Route::get("/", "index");
@@ -59,17 +80,6 @@ Route::prefix('comments')->controller(CommentsController::class)->group(function
     Route::get("recent", "recentComments");
     Route::patch("{id}/approve", "approve");
     Route::patch("{id}/reject", "reject");
-});
-
-Route::prefix('categories')->controller(CategoriesController::class)->group(function () {
-    Route::get("/", "index");
-    Route::post("/", "store")->middleware(["auth:sanctum", "role:admin"]);
-    Route::get("{id}", "show");
-    Route::post("{category}/update", "update");
-    Route::delete("{id}", "destroy");
-    Route::get("parent", "parentCategories");
-    Route::get("{id}/sub", "subCategories");
-    Route::get("{id}/posts", "categoryPosts");
 });
 
 Route::prefix('post-views')->controller(PostViewsController::class)->group(function () {
